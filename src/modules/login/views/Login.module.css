@@ -1,0 +1,16 @@
+.wrapper {
+  min-height: 100vh;
+  background-color: var(--mantine-color-dark-9);
+  background-image: radial-gradient(
+    circle at 50% 50%,
+    var(--mantine-color-dark-7) 0%,
+    var(--mantine-color-dark-9) 100%
+  );
+}
+
+.card {
+  width: 100%;
+  max-width: 400px;
+  background-color: var(--mantine-color-dark-8);
+  border: 1px solid var(--mantine-color-dark-5);
+}

@@ -1,0 +1,16 @@
+.card {
+  background-color: var(--mantine-color-dark-8);
+  border: 1px solid var(--mantine-color-dark-5);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.activityItem {
+  padding: var(--mantine-spacing-sm);
+  border-radius: var(--mantine-radius-md);
+  background-color: var(--mantine-color-dark-7);
+}

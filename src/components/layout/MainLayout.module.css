@@ -1,0 +1,31 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--mantine-color-dark-9);
+}
+
+.main {
+  flex: 1;
+  margin-left: 140px;
+  margin-right: 20px;
+  margin-top: 20px;
+  min-height: 100vh;
+  padding-left: var(--mantine-spacing-xl);
+  width: calc(100% - 120px);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .main {
+    margin-left: 0;
+    width: 100%;
+    padding: var(--mantine-spacing-md);
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .main {
+    padding: var(--mantine-spacing-lg);
+    padding-left: var(--mantine-spacing-lg);
+  }
+}

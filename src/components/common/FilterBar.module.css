@@ -1,0 +1,8 @@
+.paper {
+  background-color: var(--mantine-color-dark-8);
+  border: 1px solid var(--mantine-color-dark-5);
+}
+
+.input {
+  min-width: 200px;
+}

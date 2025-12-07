@@ -1,0 +1,32 @@
+.paper {
+  background-color: var(--mantine-color-dark-8);
+  border: 1px solid var(--mantine-color-dark-5);
+  overflow: hidden;
+}
+
+.table {
+  background-color: transparent;
+}
+
+.th {
+  background-color: var(--mantine-color-dark-7);
+  color: var(--mantine-color-dark-1);
+  font-weight: 600;
+  font-size: var(--mantine-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--mantine-color-dark-5);
+}
+
+.tr {
+  transition: background-color 150ms ease;
+}
+
+.tr:hover {
+  background-color: var(--mantine-color-dark-7);
+}
+
+.td {
+  color: var(--mantine-color-dark-0);
+  border-bottom: 1px solid var(--mantine-color-dark-6);
+}
