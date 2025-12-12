@@ -33,6 +33,7 @@ export function FilterBar({ filters, values, onChange, onClear }: FilterBarProps
                 value={values[filter.key] || ''}
                 onChange={(e) => onChange(filter.key, e.target.value)}
                 className={classes.input}
+                styles={{ input: { color: 'var(--mantine-color-dark-1)' } }}
               />
             );
           }
@@ -48,6 +49,7 @@ export function FilterBar({ filters, values, onChange, onClear }: FilterBarProps
                 onChange={(value) => onChange(filter.key, value || '')}
                 clearable
                 className={classes.input}
+                styles={{ input: { color: 'var(--mantine-color-dark-1)' } }}
               />
             );
           }

@@ -1,75 +1,175 @@
-import { useState, useMemo } from 'react';
-import { Modal, TextInput, Select, Stack, Button, Group, Badge } from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { useDisclosure } from '@mantine/hooks';
-import { notifications } from '@mantine/notifications';
-import { MainLayout } from '@/components/layout/MainLayout';
-import { PageHeader } from '@/components/common/PageHeader';
-import { DataTable, Column } from '@/components/common/DataTable';
-import { FilterBar, FilterOption } from '@/components/common/FilterBar';
-import { ConfirmModal } from '@/components/common/ConfirmModal';
-import { AdminUser, UserRole } from '@/types';
-import { mockAdminUsers } from '@/data/mockData';
+import { useState, useMemo, useEffect } from "react";
+import {
+  Modal,
+  TextInput,
+  Select,
+  Stack,
+  Button,
+  Group,
+  Badge,
+} from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { useDisclosure } from "@mantine/hooks";
+import { notifications } from "@mantine/notifications";
+import { MainLayout } from "@/components/layout/MainLayout";
+import { PageHeader } from "@/components/common/PageHeader";
+import { DataTable, Column } from "@/components/common/DataTable";
+import { FilterBar, FilterOption } from "@/components/common/FilterBar";
+import { ConfirmModal } from "@/components/common/ConfirmModal";
+import { IAdminUsersPresenter } from "../core/presentation/iAdminUsersPresenter";
+import { adminUsersPresenterProvider } from "../infrastructure/presentation/presenterProvider";
+import { AdminUserRole, IAdminUser } from "../core/entities/iAdminUser";
+import { IAdminUsersViews } from "../core/views/iAdminUsersViews";
 
 const filters: FilterOption[] = [
-  { key: 'search', label: 'Buscar', type: 'text', placeholder: 'Buscar por nombre o email...' },
   {
-    key: 'role',
-    label: 'Rol',
-    type: 'select',
+    key: "search",
+    label: "Buscar",
+    type: "text",
+    placeholder: "Buscar por nombre o email...",
+  },
+  {
+    key: "role",
+    label: "Rol",
+    type: "select",
     options: [
-      { value: 'admin', label: 'Administrador' },
-      { value: 'editor', label: 'Editor' },
+      { value: "admin", label: "Administrador" },
+      { value: "editor", label: "Editor" },
     ],
   },
 ];
 
-const columns: Column<AdminUser>[] = [
-  { key: 'name', label: 'Nombre' },
-  { key: 'email', label: 'Email' },
+const columns: Column<IAdminUser>[] = [
+  { key: "name", label: "Nombre" },
+  { key: "email", label: "Email" },
   {
-    key: 'role',
-    label: 'Rol',
+    key: "role",
+    label: "Rol",
     render: (user) => (
       <Badge
-        color={user.role === 'admin' ? 'white' : 'gray'}
-        variant={user.role === 'admin' ? 'filled' : 'light'}
+        color={user.role === "admin" ? "white" : "gray"}
+        variant={user.role === "admin" ? "filled" : "light"}
         styles={{
-          root: user.role === 'admin' ? { backgroundColor: 'white', color: 'black' } : {},
+          root:
+            user.role === "admin"
+              ? { backgroundColor: "white", color: "black" }
+              : {},
         }}
       >
-        {user.role === 'admin' ? 'Administrador' : 'Editor'}
+        {user.role === "admin" ? "Administrador" : "Editor"}
       </Badge>
     ),
   },
-  { key: 'createdAt', label: 'Fecha de creación' },
-  { key: 'lastLogin', label: 'Último acceso', render: (user) => user.lastLogin || '-' },
+  { key: "createdAt", label: "Fecha de creación" },
+  { key: "updatedAt", label: "Fecha de actualización" },
 ];
 
 export default function AdminUsers() {
-  const [adminUsers, setAdminUsers] = useState<AdminUser[]>(mockAdminUsers);
+  const [adminUsers, setAdminUsers] = useState<IAdminUser[]>([]);
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
-  const [modalOpened, { open: openModal, close: closeModal }] = useDisclosure(false);
-  const [deleteModalOpened, { open: openDeleteModal, close: closeDeleteModal }] = useDisclosure(false);
-  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+  const [modalOpened, { open: openModal, close: closeModal }] =
+    useDisclosure(false);
+  const [
+    deleteModalOpened,
+    { open: openDeleteModal, close: closeDeleteModal },
+  ] = useDisclosure(false);
+  const [selectedUser, setSelectedUser] = useState<IAdminUser | null>(null);
+  const presenterProvider = adminUsersPresenterProvider();
+  const [presenter, setPresenter] = useState<IAdminUsersPresenter>(
+    {} as IAdminUsersPresenter
+  );
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
-  const form = useForm<Partial<AdminUser> & { password?: string }>({
+  const viewHandlers: IAdminUsersViews = {
+    getUsersSuccess: (users: IAdminUser[]) => {
+      setAdminUsers(users);
+    },
+    getUsersError: (error: string) => {
+      notifications.show({
+        title: "Error al obtener los usuarios",
+        message: error,
+        color: "red",
+      });
+    },
+    updateUserSuccess: (user: IAdminUser) => {
+      setAdminUsers((prev) => prev.map((u) => (u.id === user.id ? user : u)));
+      notifications.show({
+        title: "Usuario actualizado",
+        message: "Los datos del usuario han sido actualizados correctamente.",
+        color: "green",
+      });
+    },
+    updateUserError: (error: string) => {
+      notifications.show({
+        title: "Error al actualizar el usuario",
+        message: error,
+        color: "red",
+      });
+    },
+    createUserSuccess: (user: IAdminUser) => {
+      setAdminUsers((prev) => [user, ...prev]);
+      notifications.show({
+        title: "Usuario creado",
+        message: "El nuevo usuario ha sido creado correctamente.",
+        color: "green",
+      });
+    },
+    createUserError: (error: string) => {
+      notifications.show({
+        title: "Error al crear el usuario",
+        message: error,
+        color: "red",
+      });
+    },
+    deleteUserSuccess: function (success: boolean): void {
+      if (success) {
+        setAdminUsers((prev) => prev.filter((u) => u.id !== selectedUser?.id));
+      }
+      notifications.show({
+        title: "Usuario eliminado",
+        message: "El usuario ha sido eliminado correctamente.",
+        color: "green",
+      });
+    },
+    deleteUserError: function (error: string): void {
+      notifications.show({
+        title: "Error al eliminar el usuario",
+        message: error,
+        color: "red",
+      });
+    }
+  };
+
+  useEffect(() => {
+    const presenter = presenterProvider.getPresenter(viewHandlers);
+    setPresenter(presenter);
+    setIsLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded) {
+      presenter.getAdminUsers();
+    }
+  }, [isLoaded]);
+
+  const form = useForm<Partial<IAdminUser> & { password?: string }>({
     initialValues: {
-      name: '',
-      email: '',
-      role: 'editor',
-      password: '',
+      name: "",
+      email: "",
+      role: AdminUserRole.EDITOR,
+      password: "",
     },
     validate: {
-      name: (value) => (!value ? 'El nombre es requerido' : null),
+      name: (value) => (!value ? "El nombre es requerido" : null),
       email: (value) => {
-        if (!value) return 'El email es requerido';
-        if (!/^\S+@\S+$/.test(value)) return 'Email inválido';
+        if (!value) return "El email es requerido";
+        if (!/^\S+@\S+$/.test(value)) return "Email inválido";
         return null;
       },
       password: (value, values) => {
-        if (!selectedUser && !value) return 'La contraseña es requerida';
-        if (value && value.length < 6) return 'La contraseña debe tener al menos 6 caracteres';
+        if (!selectedUser && !value) return "La contraseña es requerida";
+        if (value && value.length < 6)
+          return "La contraseña debe tener al menos 6 caracteres";
         return null;
       },
     },
@@ -79,7 +179,10 @@ export default function AdminUsers() {
     return adminUsers.filter((user) => {
       if (filterValues.search) {
         const search = filterValues.search.toLowerCase();
-        if (!user.name.toLowerCase().includes(search) && !user.email.toLowerCase().includes(search)) {
+        if (
+          !user.name.toLowerCase().includes(search) &&
+          !user.email.toLowerCase().includes(search)
+        ) {
           return false;
         }
       }
@@ -102,62 +205,41 @@ export default function AdminUsers() {
     openModal();
   };
 
-  const handleEdit = (user: AdminUser) => {
-    setSelectedUser(user);
+  const handleEdit = (user: IAdminUser) => {
+    setSelectedUser(user as IAdminUser);
     form.setValues({
       name: user.name,
       email: user.email,
       role: user.role,
-      password: '',
+      password: "",
     });
     openModal();
   };
 
-  const handleDelete = (user: AdminUser) => {
+  const handleDelete = (user: IAdminUser) => {
     setSelectedUser(user);
     openDeleteModal();
   };
 
-  const handleSubmit = (values: Partial<AdminUser> & { password?: string }) => {
+  const handleSubmit = (values: Partial<IAdminUser> & { password?: string }) => {
     if (selectedUser) {
-      setAdminUsers((prev) =>
-        prev.map((u) =>
-          u.id === selectedUser.id
-            ? { ...u, name: values.name!, email: values.email!, role: values.role as UserRole }
-            : u
-        )
-      );
-      notifications.show({
-        title: 'Usuario admin actualizado',
-        message: 'Los datos del usuario han sido actualizados correctamente.',
-        color: 'green',
-      });
+      presenter.updateAdminUser(selectedUser.id, values as IAdminUser);
     } else {
-      const newUser: AdminUser = {
-        id: String(Date.now()),
+      const newUser: IAdminUser = {
         name: values.name!,
         email: values.email!,
-        role: values.role as UserRole,
-        createdAt: new Date().toISOString().split('T')[0],
+        role: values.role as AdminUserRole,
+        createdAt: new Date().toISOString().split("T")[0],
+        password: values.password,
       };
-      setAdminUsers((prev) => [newUser, ...prev]);
-      notifications.show({
-        title: 'Usuario admin creado',
-        message: 'El nuevo usuario admin ha sido creado correctamente.',
-        color: 'green',
-      });
+      presenter.createAdminUser(newUser);
     }
     closeModal();
   };
 
   const confirmDelete = () => {
     if (selectedUser) {
-      setAdminUsers((prev) => prev.filter((u) => u.id !== selectedUser.id));
-      notifications.show({
-        title: 'Usuario admin eliminado',
-        message: 'El usuario admin ha sido eliminado correctamente.',
-        color: 'red',
-      });
+      presenter.deleteAdminUser(selectedUser.id);
     }
     closeDeleteModal();
   };
@@ -167,7 +249,7 @@ export default function AdminUsers() {
       <PageHeader
         title="Usuarios Admin"
         description="Gestiona los usuarios con acceso al panel de administración"
-        action={{ label: 'Nuevo Admin', onClick: handleCreate }}
+        action={{ label: "Nuevo Admin", onClick: handleCreate }}
       />
 
       <FilterBar
@@ -188,10 +270,10 @@ export default function AdminUsers() {
       <Modal
         opened={modalOpened}
         onClose={closeModal}
-        title={selectedUser ? 'Editar Usuario Admin' : 'Nuevo Usuario Admin'}
+        title={selectedUser ? "Editar Usuario Admin" : "Nuevo Usuario Admin"}
         centered
         styles={{
-          title: { fontWeight: 600, color: 'white' },
+          title: { fontWeight: 600, color: "white" },
         }}
       >
         <form onSubmit={form.onSubmit(handleSubmit)}>
@@ -199,30 +281,46 @@ export default function AdminUsers() {
             <TextInput
               label="Nombre"
               placeholder="Nombre completo"
-              {...form.getInputProps('name')}
-              styles={{ label: { color: 'var(--mantine-color-dark-1)' } }}
+              {...form.getInputProps("name")}
+              styles={{
+                label: { color: "var(--mantine-color-dark-1)" },
+                input: { color: "var(--mantine-color-dark-1)" },
+              }}
             />
             <TextInput
               label="Email"
               placeholder="email@ejemplo.com"
-              {...form.getInputProps('email')}
-              styles={{ label: { color: 'var(--mantine-color-dark-1)' } }}
+              {...form.getInputProps("email")}
+              styles={{
+                label: { color: "var(--mantine-color-dark-1)" },
+                input: { color: "var(--mantine-color-dark-1)" },
+              }}
             />
             <TextInput
-              label={selectedUser ? 'Nueva contraseña (dejar vacío para mantener)' : 'Contraseña'}
+              label={
+                selectedUser
+                  ? "Nueva contraseña (dejar vacío para mantener)"
+                  : "Contraseña"
+              }
               placeholder="••••••••"
               type="password"
-              {...form.getInputProps('password')}
-              styles={{ label: { color: 'var(--mantine-color-dark-1)' } }}
+              {...form.getInputProps("password")}
+              styles={{
+                label: { color: "var(--mantine-color-dark-1)" },
+                input: { color: "var(--mantine-color-dark-1)" },
+              }}
             />
             <Select
               label="Rol"
               data={[
-                { value: 'admin', label: 'Administrador - Acceso completo' },
-                { value: 'editor', label: 'Editor - Acceso limitado' },
+                { value: "admin", label: "Administrador - Acceso completo" },
+                { value: "editor", label: "Editor - Acceso limitado" },
               ]}
-              {...form.getInputProps('role')}
-              styles={{ label: { color: 'var(--mantine-color-dark-1)' } }}
+              {...form.getInputProps("role")}
+              styles={{
+                label: { color: "var(--mantine-color-dark-1)" },
+                input: { color: "var(--mantine-color-dark-1)" },
+              }}
             />
             <Group justify="flex-end" mt="md">
               <Button variant="subtle" color="gray" onClick={closeModal}>
@@ -231,10 +329,16 @@ export default function AdminUsers() {
               <Button
                 type="submit"
                 styles={{
-                  root: { backgroundColor: 'white', color: 'black' },
+                  root: {
+                    backgroundColor: "white",
+                    color: "black",
+                    "&:hover": {
+                      backgroundColor: "var(--mantine-color-dark-1)",
+                    },
+                  },
                 }}
               >
-                {selectedUser ? 'Guardar cambios' : 'Crear usuario'}
+                {selectedUser ? "Guardar cambios" : "Crear usuario"}
               </Button>
             </Group>
           </Stack>

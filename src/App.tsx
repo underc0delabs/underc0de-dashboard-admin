@@ -18,6 +18,7 @@ const App: React.FC = () => {
     app.httpClientModuleInitialize(dependencyManagerRef.current);
     app.loginModuleInitialize(dependencyManagerRef.current);
     app.dashboardModuleInitialize(dependencyManagerRef.current);
+    app.adminUsersModuleInitialize(dependencyManagerRef.current);
     setIsLoaded(true);
   }, []);
 
