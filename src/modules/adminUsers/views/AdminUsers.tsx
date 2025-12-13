@@ -296,6 +296,7 @@ export default function AdminUsers() {
         onEdit={handleEdit}
         onDelete={handleDelete}
         emptyMessage="No se encontraron usuarios admin"
+        isFromUserAdmin={true}
       />
 
       <Modal

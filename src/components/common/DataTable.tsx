@@ -32,6 +32,7 @@ interface DataTableProps<T> {
   emptyMessage?: string;
   canEdit?: boolean;
   canDelete?: boolean;
+  isFromUserAdmin?: boolean;
 }
 
 export function DataTable<T extends { id?: string }>({
@@ -46,6 +47,7 @@ export function DataTable<T extends { id?: string }>({
   emptyMessage = "No hay datos disponibles",
   canEdit = true,
   canDelete = true,
+  isFromUserAdmin = false
 }: DataTableProps<T>) {
   const user = useAuth();
   const userId = user.user?.id;
@@ -116,7 +118,7 @@ export function DataTable<T extends { id?: string }>({
                     {onDelete && canDelete && (
                       <Tooltip
                         label={
-                          item.id === userId
+                          isFromUserAdmin && item.id === userId
                             ? "No puedes eliminar tu propio usuario"
                             : "Eliminar"
                         }
@@ -124,7 +126,7 @@ export function DataTable<T extends { id?: string }>({
                         <ActionIcon
                           variant="subtle"
                           color="red"
-                          disabled={item.id === userId}
+                          disabled={isFromUserAdmin && item.id === userId}
                           onClick={() => onDelete(item)}
                         >
                           <IconTrash size={18} />

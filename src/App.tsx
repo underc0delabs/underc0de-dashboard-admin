@@ -20,6 +20,7 @@ const App: React.FC = () => {
     app.dashboardModuleInitialize(dependencyManagerRef.current);
     app.adminUsersModuleInitialize(dependencyManagerRef.current);
     app.merchantsModuleInitialize(dependencyManagerRef.current);
+    app.notificationsModuleInitialize(dependencyManagerRef.current);
     setIsLoaded(true);
   }, []);
 
