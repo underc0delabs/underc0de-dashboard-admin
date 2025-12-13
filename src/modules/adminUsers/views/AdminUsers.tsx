@@ -2,11 +2,13 @@ import { useState, useMemo, useEffect } from "react";
 import {
   Modal,
   TextInput,
+  PasswordInput,
   Select,
   Stack,
   Button,
   Group,
   Badge,
+  Switch,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
@@ -20,6 +22,7 @@ import { IAdminUsersPresenter } from "../core/presentation/iAdminUsersPresenter"
 import { adminUsersPresenterProvider } from "../infrastructure/presentation/presenterProvider";
 import { AdminUserRole, IAdminUser } from "../core/entities/iAdminUser";
 import { IAdminUsersViews } from "../core/views/iAdminUsersViews";
+import { useAuth } from "@/context/AuthContext";
 
 const filters: FilterOption[] = [
   {
@@ -39,30 +42,6 @@ const filters: FilterOption[] = [
   },
 ];
 
-const columns: Column<IAdminUser>[] = [
-  { key: "name", label: "Nombre" },
-  { key: "email", label: "Email" },
-  {
-    key: "role",
-    label: "Rol",
-    render: (user) => (
-      <Badge
-        color={user.role === "admin" ? "white" : "gray"}
-        variant={user.role === "admin" ? "filled" : "light"}
-        styles={{
-          root:
-            user.role === "admin"
-              ? { backgroundColor: "white", color: "black" }
-              : {},
-        }}
-      >
-        {user.role === "admin" ? "Administrador" : "Editor"}
-      </Badge>
-    ),
-  },
-  { key: "createdAt", label: "Fecha de creación" },
-  { key: "updatedAt", label: "Fecha de actualización" },
-];
 
 export default function AdminUsers() {
   const [adminUsers, setAdminUsers] = useState<IAdminUser[]>([]);
@@ -79,6 +58,56 @@ export default function AdminUsers() {
     {} as IAdminUsersPresenter
   );
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
+  const userAuth = useAuth();
+
+  const handleStatusChange = (user: IAdminUser, checked: boolean) => {
+    if (user.id && isLoaded) {
+      presenter.updateAdminUser(user.id, {status: checked} as IAdminUser);
+    } 
+  };
+
+  const columns: Column<IAdminUser>[] = [
+    { key: "name", label: "Nombre" },
+    { key: "email", label: "Email" },
+    {
+      key: "role",
+      label: "Rol",
+      render: (user) => (
+        <Badge
+          color={user.role === "admin" ? "white" : "gray"}
+          variant={user.role === "admin" ? "filled" : "light"}
+          styles={{
+            root:
+              user.role === "admin"
+                ? { backgroundColor: "white", color: "black" }
+                : {},
+          }}
+        >
+          {user.role === "admin" ? "Administrador" : "Editor"}
+        </Badge>
+      ),
+    },
+    { key: "createdAt", label: "Fecha de creación" },
+    { key: "updatedAt", label: "Fecha de actualización" },
+    {
+      key: "status",
+      label: "Estado",
+      render: (user) => (
+        <Switch
+          checked={user.status}
+          disabled={user.id === userAuth?.user?.id}
+          onChange={(event) => handleStatusChange(user, event.currentTarget.checked)}
+          styles={{
+            track: {
+              backgroundColor: user.status
+                ? "var(--mantine-color-dark-5)" 
+                : "var(--mantine-color-green-6)",
+            },
+          }}
+        />
+      ),
+    },
+  ];
 
   const viewHandlers: IAdminUsersViews = {
     getUsersSuccess: (users: IAdminUser[]) => {
@@ -157,6 +186,7 @@ export default function AdminUsers() {
       name: "",
       email: "",
       role: AdminUserRole.EDITOR,
+      status: true,
       password: "",
     },
     validate: {
@@ -229,6 +259,7 @@ export default function AdminUsers() {
         name: values.name!,
         email: values.email!,
         role: values.role as AdminUserRole,
+        status: values.status || true,
         createdAt: new Date().toISOString().split("T")[0],
         password: values.password,
       };
@@ -296,14 +327,13 @@ export default function AdminUsers() {
                 input: { color: "var(--mantine-color-dark-1)" },
               }}
             />
-            <TextInput
+            <PasswordInput
               label={
                 selectedUser
                   ? "Nueva contraseña (dejar vacío para mantener)"
                   : "Contraseña"
               }
               placeholder="••••••••"
-              type="password"
               {...form.getInputProps("password")}
               styles={{
                 label: { color: "var(--mantine-color-dark-1)" },

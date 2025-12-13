@@ -8,6 +8,7 @@ export interface IAdminUser {
   email: string;
   name: string;
   role: AdminUserRole;
+  status?: boolean;
   createdAt: string;
   updatedAt?: string;
   password?: string;

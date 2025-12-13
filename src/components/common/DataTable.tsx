@@ -34,7 +34,7 @@ interface DataTableProps<T> {
   canDelete?: boolean;
 }
 
-export function DataTable<T extends { id: string }>({
+export function DataTable<T extends { id?: string }>({
   data,
   columns,
   onEdit,
@@ -102,7 +102,7 @@ export function DataTable<T extends { id: string }>({
                         </ActionIcon>
                       </Tooltip>
                     )}
-                    {onEdit && canEdit && isUserAdmin && (
+                    {onEdit && canEdit && (
                       <Tooltip label="Editar">
                         <ActionIcon
                           variant="subtle"
@@ -113,7 +113,7 @@ export function DataTable<T extends { id: string }>({
                         </ActionIcon>
                       </Tooltip>
                     )}
-                    {onDelete && canDelete && isUserAdmin && (
+                    {onDelete && canDelete && (
                       <Tooltip
                         label={
                           item.id === userId

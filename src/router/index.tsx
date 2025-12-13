@@ -6,7 +6,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import Login from "@/modules/login/views/Login";
 import Dashboard from "@/modules/dashboard/views/Dashboard";
 import Users from "@/modules/appUsers/views/Users";
-import Commerces from "@/modules/merchants/views/Commerces";
+import Commerces from "@/modules/commerces/views/Commerces";
 import { RolesEnum } from "@/constants/rolesEnum";
 import AdminUsers from "@/modules/adminUsers/views/AdminUsers";
 import Notifications from "@/modules/notifications/views/Notifications";
