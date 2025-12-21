@@ -7,7 +7,6 @@ export const HttpGetNotificationGateway = (
   httpClient: IHttpClient
 ): IGetNotificationGateway => {
   const toNotifications = (response: any): INotification[] => {
-    console.log("response get notifications", response);
     return response.map((notification: any) => ({
       id: notification.id,
       title: notification.title,

@@ -7,7 +7,6 @@ export const HttpUpdateNotificationGateway = (
   httpClient: IHttpClient
 ): IUpdateNotificationGateway => {
   const toNotification = (response: any): INotification => {
-    console.log("response update notification", response);
     return {
       id: response.id,
       title: response.title,

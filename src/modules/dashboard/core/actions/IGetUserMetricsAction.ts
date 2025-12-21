@@ -1,8 +1,8 @@
-import { IUserMetric } from "../entities/IUserMetric";
+import { IMetrics } from "../entities/IMetrics";
 import { IGetUsersMetricsGateway } from "../gateways/IGetUsersMetricsGateway";
 
 export interface IGetUserMetricsAction {
-  getUserMetrics: () => Promise<IUserMetric>;
+  getUserMetrics: () => Promise<IMetrics>;
 }
 
 export const GetUserMetricsAction = (

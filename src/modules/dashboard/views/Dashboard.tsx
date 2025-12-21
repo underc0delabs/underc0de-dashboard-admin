@@ -18,15 +18,41 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { StatsCard } from "@/components/common/StatsCard";
 import { mockUsers, mockCommerces, mockNotifications } from "@/data/mockData";
 import classes from "./Dashboard.module.css";
+import { IMetrics } from "../core/entities/IMetrics";
+import { useEffect, useState } from "react";
+import { IDashboardPresenter } from "../core/presentation/IDashboardPresenter";
+import { dashboardPresenterProvider } from "../infrastructure/presentation/presenterProvider";
+import { IDashboardView } from "../core/views/IDashboardView";
 
 const Dashboard = () => {
-  const activeUsers = mockUsers.filter((u) => u.status === "active").length;
-  const activeCommerces = mockCommerces.filter(
-    (c) => c.status === "active"
-  ).length;
-  const sentNotifications = mockNotifications.filter(
-    (n) => n.status === "sent"
-  ).length;
+  const presenterProvider = dashboardPresenterProvider();
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [presenter, setPresenter] = useState<IDashboardPresenter>({} as IDashboardPresenter);
+  const [metrics, setMetrics] = useState<IMetrics>({
+    users: 0,
+    merchants: 0,
+    notifications: 0,
+    subscriptions: 0,
+  });
+  const viewHandlers: IDashboardView = {
+    getMetrics: (metrics: IMetrics) => {
+      setMetrics(metrics);
+    },
+    getMetricsError: (error: Error) => {
+      console.error(error);
+    },
+  };
+
+  useEffect(() => {
+    setPresenter(presenterProvider.getPresenter(viewHandlers));
+    setIsLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded) {
+      presenter.getMetrics();
+    }
+  }, [isLoaded]);
 
   const subscriptionStats = {
     active: mockUsers.filter((u) => u.subscription === "active").length,
@@ -44,25 +70,22 @@ const Dashboard = () => {
       <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} mb="xl">
         <StatsCard
           title="Usuarios Totales"
-          value={mockUsers.length}
+          value={metrics.users}
           icon={<IconUsers size={24} />}
-          description={`${activeUsers} activos`}
         />
         <StatsCard
           title="Comercios"
-          value={mockCommerces.length}
+          value={metrics.merchants}
           icon={<IconBuildingStore size={24} />}
-          description={`${activeCommerces} activos`}
         />
         <StatsCard
-          title="Notificaciones Enviadas"
-          value={sentNotifications}
+          title="Notificaciones"
+          value={metrics.notifications}
           icon={<IconBell size={24} />}
-          description="Este mes"
         />
       </SimpleGrid>
 
-      <SimpleGrid cols={{ base: 1, lg: 2 }} mb="xl">
+      {/* <SimpleGrid cols={{ base: 1, lg: 2 }} mb="xl">
         <Paper p="lg" radius="md" className={classes.card}>
           <Title order={4} c="white" mb="lg">
             Estado de Suscripciones
@@ -143,7 +166,7 @@ const Dashboard = () => {
             </Stack>
           </Group>
         </Paper>
-      </SimpleGrid>
+      </SimpleGrid> */}
     </MainLayout>
   );
 }
