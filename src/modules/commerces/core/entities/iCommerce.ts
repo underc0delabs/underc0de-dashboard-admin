@@ -7,6 +7,8 @@ export interface ICommerce {
   email?: string;
   status: boolean;
   logo?: string;
+  usersProDisccount?: number | null;
+  usersDisccount?: number | null;
   createdAt: string;
   updatedAt?: string;
 }

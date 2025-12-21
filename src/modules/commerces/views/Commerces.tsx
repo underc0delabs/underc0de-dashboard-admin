@@ -10,6 +10,7 @@ import {
   Image,
   ActionIcon,
   Box,
+  NumberInput,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
@@ -52,6 +53,16 @@ const columns: Column<ICommerce>[] = [
     render: (commerce) => commerce.phone || "-",
   },
   { key: "email", label: "Email", render: (commerce) => commerce.email || "-" },
+  {
+    key: "usersProDisccount",
+    label: "Descuento Pro",
+    render: (commerce) => commerce.usersProDisccount ?? "-",
+  },
+  {
+    key: "usersDisccount",
+    label: "Descuento Usuario",
+    render: (commerce) => commerce.usersDisccount ?? "-",
+  },
   {
     key: "status",
     label: "Estado",
@@ -156,12 +167,26 @@ export default function Commerces() {
       email: "",
       status: true,  
       logo: null,
+      usersProDisccount: null,
+      usersDisccount: null,
     },
     validate: {
       name: (value) => (!value ? "El nombre es requerido" : null),
       address: (value) => (!value ? "La dirección es requerida" : null),
       email: (value) => {
         if (value && !/^\S+@\S+$/.test(value)) return "Email inválido";
+        return null;
+      },
+      usersProDisccount: (value) => {
+        if (value !== null && value !== undefined && (isNaN(Number(value)) || Number(value) < 0)) {
+          return "Debe ser un número entero positivo o vacío";
+        }
+        return null;
+      },
+      usersDisccount: (value) => {
+        if (value !== null && value !== undefined && (isNaN(Number(value)) || Number(value) < 0)) {
+          return "Debe ser un número entero positivo o vacío";
+        }
         return null;
       },
     },
@@ -204,6 +229,8 @@ export default function Commerces() {
       email: commerce.email,
       status: commerce.status,
       logo: commerce.logo ? new File([], commerce.logo) as unknown as (string & File) : null,
+      usersProDisccount: commerce.usersProDisccount ?? null,
+      usersDisccount: commerce.usersDisccount ?? null,
     });
     openModal();
   };
@@ -243,6 +270,8 @@ export default function Commerces() {
         email: values.email,
         status: values.status,
         logo: values.logo,
+        usersProDisccount: values.usersProDisccount ?? null,
+        usersDisccount: values.usersDisccount ?? null,
         createdAt: new Date().toISOString().split("T")[0],
         updatedAt: new Date().toISOString().split("T")[0],
       };
@@ -324,6 +353,54 @@ export default function Commerces() {
               styles={{
                 label: { color: "var(--mantine-color-dark-1)" },
                 input: { color: "var(--mantine-color-dark-1)" },
+              }}
+            />
+            <NumberInput
+              label="Descuento Pro Usuarios"
+              placeholder="Ingrese un número entero"
+              allowDecimal={false}
+              allowNegative={false}
+              {...form.getInputProps("usersProDisccount")}
+              value={form.values.usersProDisccount ?? undefined}
+              onChange={(value) => form.setFieldValue("usersProDisccount", value === "" ? null : Number(value))}
+              styles={{
+                label: { color: "var(--mantine-color-dark-1)" },
+                input: { 
+                  color: "var(--mantine-color-dark-1)",
+                  backgroundColor: "var(--mantine-color-dark-7)",
+                  borderColor: "var(--mantine-color-dark-4)",
+                },
+                control: {
+                  color: "var(--mantine-color-dark-1)",
+                  borderColor: "var(--mantine-color-dark-4)",
+                },
+                wrapper: {
+                  backgroundColor: "var(--mantine-color-dark-7)",
+                },
+              }}
+            />
+            <NumberInput
+              label="Descuento Usuarios"
+              placeholder="Ingrese un número entero"
+              allowDecimal={false}
+              allowNegative={false}
+              {...form.getInputProps("usersDisccount")}
+              value={form.values.usersDisccount ?? undefined}
+              onChange={(value) => form.setFieldValue("usersDisccount", value === "" ? null : Number(value))}
+              styles={{
+                label: { color: "var(--mantine-color-dark-1)" },
+                input: { 
+                  color: "var(--mantine-color-dark-1)",
+                  backgroundColor: "var(--mantine-color-dark-7)",
+                  borderColor: "var(--mantine-color-dark-4)",
+                },
+                control: {
+                  color: "var(--mantine-color-dark-1)",
+                  borderColor: "var(--mantine-color-dark-4)",
+                },
+                wrapper: {
+                  backgroundColor: "var(--mantine-color-dark-7)",
+                },
               }}
             />
             <FileInput

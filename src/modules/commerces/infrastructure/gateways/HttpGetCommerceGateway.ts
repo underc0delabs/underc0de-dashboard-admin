@@ -16,6 +16,8 @@ export const HttpGetCommerceGateway = (
       email: commerce.email,
       status: commerce.status,
       logo: commerce.logo,
+      usersProDisccount: commerce.usersProDisccount ?? null,
+      usersDisccount: commerce.usersDisccount ?? null,
       createdAt: format(commerce.createdAt, "dd/MM/yyyy HH:mm"),
       updatedAt: format(commerce.updatedAt, "dd/MM/yyyy HH:mm"),
     }));
