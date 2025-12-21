@@ -19,6 +19,7 @@ const App: React.FC = () => {
     app.loginModuleInitialize(dependencyManagerRef.current);
     app.dashboardModuleInitialize(dependencyManagerRef.current);
     app.adminUsersModuleInitialize(dependencyManagerRef.current);
+    app.appUsersModuleInitialize(dependencyManagerRef.current);
     app.merchantsModuleInitialize(dependencyManagerRef.current);
     app.notificationsModuleInitialize(dependencyManagerRef.current);
     setIsLoaded(true);

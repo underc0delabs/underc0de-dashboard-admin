@@ -148,9 +148,35 @@ export function DataTable<T extends { id?: string }>({
             total={totalPages}
             color="dark"
             styles={{
+              root: {
+                gap: "var(--mantine-spacing-xs)",
+              },
               control: {
-                borderColor: "var(--mantine-color-dark-4)",
+                backgroundColor: "var(--mantine-color-dark-7)",
+                borderColor: "var(--mantine-color-dark-5)",
                 color: "var(--mantine-color-dark-0)",
+                "&:hover": {
+                  backgroundColor: "var(--mantine-color-dark-6)",
+                  borderColor: "var(--mantine-color-dark-4)",
+                },
+                "&[data-active]": {
+                  backgroundColor: "white",
+                  borderColor: "white",
+                  color: "black",
+                  "&:hover": {
+                    backgroundColor: "var(--mantine-color-dark-1)",
+                    color: "white",
+                  },
+                },
+                "&[data-disabled]": {
+                  backgroundColor: "var(--mantine-color-dark-8)",
+                  borderColor: "var(--mantine-color-dark-6)",
+                  color: "var(--mantine-color-dark-4)",
+                  opacity: 0.5,
+                },
+              },
+              dots: {
+                color: "var(--mantine-color-dark-2)",
               },
             }}
           />
