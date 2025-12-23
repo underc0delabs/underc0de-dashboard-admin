@@ -11,6 +11,7 @@ import {
   ActionIcon,
   Box,
   NumberInput,
+  SimpleGrid,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
@@ -46,13 +47,8 @@ const filters: FilterOption[] = [
 
 const columns: Column<ICommerce>[] = [
   { key: "name", label: "Nombre" },
-  { key: "address", label: "Dirección" },
-  {
-    key: "phone",
-    label: "Teléfono",
-    render: (commerce) => commerce.phone || "-",
-  },
-  { key: "email", label: "Email", render: (commerce) => commerce.email || "-" },
+  { key: "detail", label: "Detalle", render: (commerce) => commerce.detail || "-" },
+  { key: "url", label: "URL", render: (commerce) => commerce.url || "-" },
   {
     key: "usersProDisccount",
     label: "Descuento Pro",
@@ -169,6 +165,8 @@ export default function Commerces() {
       logo: null,
       usersProDisccount: null,
       usersDisccount: null,
+      url: "",
+      detail: "",
     },
     validate: {
       name: (value) => (!value ? "El nombre es requerido" : null),
@@ -231,6 +229,8 @@ export default function Commerces() {
       logo: commerce.logo ? new File([], commerce.logo) as unknown as (string & File) : null,
       usersProDisccount: commerce.usersProDisccount ?? null,
       usersDisccount: commerce.usersDisccount ?? null,
+      url: commerce.url ?? "",
+      detail: commerce.detail ?? "",
     });
     openModal();
   };
@@ -270,6 +270,8 @@ export default function Commerces() {
         email: values.email,
         status: values.status,
         logo: values.logo,
+        url: values.url ?? "",
+        detail: values.detail ?? "",
         usersProDisccount: values.usersProDisccount ?? null,
         usersDisccount: values.usersDisccount ?? null,
         createdAt: new Date().toISOString().split("T")[0],
@@ -313,94 +315,129 @@ export default function Commerces() {
         onClose={closeModal}
         title={selectedCommerce ? "Editar Comercio" : "Nuevo Comercio"}
         centered
+        size="xl"
         styles={{
           title: { fontWeight: 600, color: "white" },
+          body: { maxHeight: "90vh", overflowY: "auto" },
         }}
       >
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <Stack gap="md">
+            <SimpleGrid cols={2} spacing="md">
+              <TextInput
+                label="Nombre"
+                placeholder="Nombre del comercio"
+                {...form.getInputProps("name")}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { color: "var(--mantine-color-dark-1)" },
+                }}
+              />
+              <TextInput
+                label="Dirección"
+                placeholder="Dirección completa"
+                {...form.getInputProps("address")}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { color: "var(--mantine-color-dark-1)" },
+                }}
+              />
+              <TextInput
+                label="Teléfono"
+                placeholder="+54 11 1234-5678"
+                {...form.getInputProps("phone")}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { color: "var(--mantine-color-dark-1)" },
+                }}
+              />
+              <TextInput
+                label="Email"
+                placeholder="email@comercio.com"
+                {...form.getInputProps("email")}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { color: "var(--mantine-color-dark-1)" },
+                }}
+              />
+              <TextInput
+                label="URL"
+                placeholder="https://www.ejemplo.com"
+                {...form.getInputProps("url")}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { color: "var(--mantine-color-dark-1)" },
+                }}
+              />
+              <Select
+                label="Estado"
+                data={[
+                  { value: "true", label: "Activo" },
+                  { value: "false", label: "Inactivo" },
+                ]}
+                value={form.values.status?.toString() || ""}
+                onChange={(value) => form.setFieldValue("status", value === "true")}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { color: "var(--mantine-color-dark-1)" },
+                }}
+              />
+              <NumberInput
+                label="Descuento Pro Usuarios"
+                placeholder="Ingrese un número entero"
+                allowDecimal={false}
+                allowNegative={false}
+                {...form.getInputProps("usersProDisccount")}
+                value={form.values.usersProDisccount ?? undefined}
+                onChange={(value) => form.setFieldValue("usersProDisccount", value === "" ? null : Number(value))}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { 
+                    color: "var(--mantine-color-dark-1)",
+                    backgroundColor: "var(--mantine-color-dark-7)",
+                    borderColor: "var(--mantine-color-dark-4)",
+                  },
+                  control: {
+                    color: "var(--mantine-color-dark-1)",
+                    borderColor: "var(--mantine-color-dark-4)",
+                  },
+                  wrapper: {
+                    backgroundColor: "var(--mantine-color-dark-7)",
+                  },
+                }}
+              />
+              <NumberInput
+                label="Descuento Usuarios"
+                placeholder="Ingrese un número entero"
+                allowDecimal={false}
+                allowNegative={false}
+                {...form.getInputProps("usersDisccount")}
+                value={form.values.usersDisccount ?? undefined}
+                onChange={(value) => form.setFieldValue("usersDisccount", value === "" ? null : Number(value))}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { 
+                    color: "var(--mantine-color-dark-1)",
+                    backgroundColor: "var(--mantine-color-dark-7)",
+                    borderColor: "var(--mantine-color-dark-4)",
+                  },
+                  control: {
+                    color: "var(--mantine-color-dark-1)",
+                    borderColor: "var(--mantine-color-dark-4)",
+                  },
+                  wrapper: {
+                    backgroundColor: "var(--mantine-color-dark-7)",
+                  },
+                }}
+              />
+            </SimpleGrid>
             <TextInput
-              label="Nombre"
-              placeholder="Nombre del comercio"
-              {...form.getInputProps("name")}
+              label="Detalle"
+              placeholder="Descripción del comercio"
+              {...form.getInputProps("detail")}
               styles={{
                 label: { color: "var(--mantine-color-dark-1)" },
                 input: { color: "var(--mantine-color-dark-1)" },
-              }}
-            />
-            <TextInput
-              label="Dirección"
-              placeholder="Dirección completa"
-              {...form.getInputProps("address")}
-              styles={{
-                label: { color: "var(--mantine-color-dark-1)" },
-                input: { color: "var(--mantine-color-dark-1)" },
-              }}
-            />
-            <TextInput
-              label="Teléfono"
-              placeholder="+54 11 1234-5678"
-              {...form.getInputProps("phone")}
-              styles={{
-                label: { color: "var(--mantine-color-dark-1)" },
-                input: { color: "var(--mantine-color-dark-1)" },
-              }}
-            />
-            <TextInput
-              label="Email"
-              placeholder="email@comercio.com"
-              {...form.getInputProps("email")}
-              styles={{
-                label: { color: "var(--mantine-color-dark-1)" },
-                input: { color: "var(--mantine-color-dark-1)" },
-              }}
-            />
-            <NumberInput
-              label="Descuento Pro Usuarios"
-              placeholder="Ingrese un número entero"
-              allowDecimal={false}
-              allowNegative={false}
-              {...form.getInputProps("usersProDisccount")}
-              value={form.values.usersProDisccount ?? undefined}
-              onChange={(value) => form.setFieldValue("usersProDisccount", value === "" ? null : Number(value))}
-              styles={{
-                label: { color: "var(--mantine-color-dark-1)" },
-                input: { 
-                  color: "var(--mantine-color-dark-1)",
-                  backgroundColor: "var(--mantine-color-dark-7)",
-                  borderColor: "var(--mantine-color-dark-4)",
-                },
-                control: {
-                  color: "var(--mantine-color-dark-1)",
-                  borderColor: "var(--mantine-color-dark-4)",
-                },
-                wrapper: {
-                  backgroundColor: "var(--mantine-color-dark-7)",
-                },
-              }}
-            />
-            <NumberInput
-              label="Descuento Usuarios"
-              placeholder="Ingrese un número entero"
-              allowDecimal={false}
-              allowNegative={false}
-              {...form.getInputProps("usersDisccount")}
-              value={form.values.usersDisccount ?? undefined}
-              onChange={(value) => form.setFieldValue("usersDisccount", value === "" ? null : Number(value))}
-              styles={{
-                label: { color: "var(--mantine-color-dark-1)" },
-                input: { 
-                  color: "var(--mantine-color-dark-1)",
-                  backgroundColor: "var(--mantine-color-dark-7)",
-                  borderColor: "var(--mantine-color-dark-4)",
-                },
-                control: {
-                  color: "var(--mantine-color-dark-1)",
-                  borderColor: "var(--mantine-color-dark-4)",
-                },
-                wrapper: {
-                  backgroundColor: "var(--mantine-color-dark-7)",
-                },
               }}
             />
             <FileInput
@@ -443,19 +480,6 @@ export default function Commerces() {
                 </ActionIcon>
               </Box>
             )}
-            <Select
-              label="Estado"
-              data={[
-                { value: "true", label: "Activo" },
-                { value: "false", label: "Inactivo" },
-              ]}
-              value={form.values.status?.toString() || ""}
-              onChange={(value) => form.setFieldValue("status", value === "true")}
-              styles={{
-                label: { color: "var(--mantine-color-dark-1)" },
-                input: { color: "var(--mantine-color-dark-1)" },
-              }}
-            />
             <Group justify="flex-end" mt="md">
               <Button variant="subtle" color="gray" onClick={closeModal}>
                 Cancelar

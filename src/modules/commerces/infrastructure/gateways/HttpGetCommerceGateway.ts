@@ -18,6 +18,8 @@ export const HttpGetCommerceGateway = (
       logo: commerce.logo,
       usersProDisccount: commerce.usersProDisccount ?? null,
       usersDisccount: commerce.usersDisccount ?? null,
+      url: commerce.url,
+      detail: commerce.detail,
       createdAt: format(commerce.createdAt, "dd/MM/yyyy HH:mm"),
       updatedAt: format(commerce.updatedAt, "dd/MM/yyyy HH:mm"),
     }));

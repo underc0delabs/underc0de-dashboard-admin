@@ -18,6 +18,8 @@ export const HttpUpdateCommerceGateway = (
       logo: response.logo,
       usersProDisccount: response.usersProDisccount ?? null,
       usersDisccount: response.usersDisccount ?? null,
+      url: response.url,
+      detail: response.detail,
       createdAt: format(response.createdAt, "dd/MM/yyyy HH:mm"),
       updatedAt: format(response.updatedAt, "dd/MM/yyyy HH:mm"),
     };
@@ -39,6 +41,8 @@ export const HttpUpdateCommerceGateway = (
         if (commerce.usersDisccount !== undefined && commerce.usersDisccount !== null) {
           formData.append('usersDisccount', String(commerce.usersDisccount));
         }
+        if (commerce.url) formData.append('url', commerce.url);
+        if (commerce.detail) formData.append('detail', commerce.detail);
         
         if (commerce.logo) {
           const logoValue = commerce.logo as any;

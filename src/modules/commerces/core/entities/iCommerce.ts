@@ -9,6 +9,8 @@ export interface ICommerce {
   logo?: string;
   usersProDisccount?: number | null;
   usersDisccount?: number | null;
+  url?: string;
+  detail?: string;
   createdAt: string;
   updatedAt?: string;
 }
