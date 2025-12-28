@@ -44,9 +44,12 @@ export const HttpUpdateCommerceGateway = (
         if (commerce.url) formData.append('url', commerce.url);
         if (commerce.detail) formData.append('detail', commerce.detail);
         
+        // Solo enviar el logo si es un File válido (nueva imagen seleccionada)
+        // Si el logo es null o string, no se envía (se mantiene el logo existente)
         if (commerce.logo) {
           const logoValue = commerce.logo as any;
-          if (logoValue && typeof logoValue === 'object' && logoValue.constructor === File) {
+          // Verificar que sea realmente un File y no un string o File vacío
+          if (logoValue && typeof logoValue === 'object' && logoValue.constructor === File && logoValue.size > 0) {
             formData.append('logo', logoValue);
           }
         }

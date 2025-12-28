@@ -84,6 +84,7 @@ export default function Commerces() {
   );
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [logoRemoved, setLogoRemoved] = useState<boolean>(false);
 
   const viewHandlers: ICommerceViews = {
     getCommercesSuccess: (commerces) => {
@@ -212,13 +213,15 @@ export default function Commerces() {
   const handleCreate = () => {
     setSelectedCommerce({} as ICommerce);
     setPhotoPreview(null);
+    setLogoRemoved(false);
     form.reset();
     openModal();
   };
 
   const handleEdit = (commerce: ICommerce) => {
     setSelectedCommerce(commerce);
-    setPhotoPreview(commerce.logo);
+    setPhotoPreview(commerce.logo || null);
+    setLogoRemoved(false);
     form.setValues({
       name: commerce.name,
       category: commerce.category,
@@ -226,7 +229,7 @@ export default function Commerces() {
       phone: commerce.phone,
       email: commerce.email,
       status: commerce.status,
-      logo: commerce.logo ? new File([], commerce.logo) as unknown as (string & File) : null,
+      logo: null, // No establecer el logo existente como File, solo se enviará si el usuario selecciona uno nuevo
       usersProDisccount: commerce.usersProDisccount ?? null,
       usersDisccount: commerce.usersDisccount ?? null,
       url: commerce.url ?? "",
@@ -237,6 +240,7 @@ export default function Commerces() {
 
   const handlePhotoChange = (file: File | null) => {
     form.setFieldValue("logo", file as unknown as (string & File));
+    setLogoRemoved(false); // Si se selecciona un archivo, ya no está removido
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -251,6 +255,7 @@ export default function Commerces() {
   const handleRemovePhoto = () => {
     form.setFieldValue("logo", null);
     setPhotoPreview(null);
+    setLogoRemoved(true); // Marcar que el logo fue removido intencionalmente
   };
 
   const handleDelete = (commerce: ICommerce) => {
