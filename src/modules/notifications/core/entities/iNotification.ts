@@ -3,6 +3,7 @@ export interface INotification {
   title: string;
   message: string;
   audience: 'todos' | 'usersPro' | 'normalUsers';
+  userId?: string;
   scheduledAt?: string;
   sentAt?: string;
   createdAt: string;

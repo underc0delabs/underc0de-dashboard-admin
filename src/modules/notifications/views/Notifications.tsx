@@ -21,6 +21,9 @@ import { INotificationPresenter } from "../core/presentation/iNotificationPresen
 import { INotificationViews } from "../core/views/iNotificationViews";
 import { INotification } from "../core/entities/iNotification";
 import { useAuth } from "@/context/AuthContext";
+import { useDependency } from "@/hooks/useDependency";
+import { IGetAppUsersAction } from "@/modules/appUsers/core/actions/getAppUsersAction";
+import { IAppUser } from "@/modules/appUsers/core/entities/iAppUser";
 
 const filters: FilterOption[] = [
   {
@@ -60,7 +63,12 @@ const columns: Column<INotification>[] = [
   {
     key: "audience",
     label: "Audiencia",
-    render: (notification) => audienceLabels[notification.audience],
+    render: (notification) => {
+      if (notification.userId) {
+        return "Usuario específico";
+      }
+      return audienceLabels[notification.audience];
+    },
   },
   { key: "createdAt", label: "Creado" },
   { key: "createdBy", label: "Creado por" },
@@ -80,12 +88,13 @@ export default function Notifications() {
   ] = useDisclosure(false);
   const [selectedNotification, setSelectedNotification] =
     useState<INotification | null>(null);
+  const [users, setUsers] = useState<IAppUser[]>([]);
   const presenterProvider = notificationPresenterProvider();
   const [presenter, setPresenter] = useState<INotificationPresenter>(
     {} as INotificationPresenter
   );
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
-  const userAuth = useAuth();
+  const getAppUsersAction = useDependency<IGetAppUsersAction>("getAppUsersAction");
 
   const viewHandlers: INotificationViews = useMemo(
     () => ({
@@ -166,11 +175,24 @@ export default function Notifications() {
     }
   }, [isLoaded]);
 
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const usersList = await getAppUsersAction.execute();
+        setUsers(usersList);
+      } catch (error) {
+        console.error("Error al cargar usuarios:", error);
+      }
+    };
+    loadUsers();
+  }, [getAppUsersAction]);
+
   const form = useForm<Partial<INotification>>({
     initialValues: {
       title: "",
       message: "",
       audience: "todos",
+      userId: undefined,
     },
     validate: {
       title: (value) => (!value ? "El título es requerido" : null),
@@ -210,6 +232,7 @@ export default function Notifications() {
       title: notification.title,
       message: notification.message,
       audience: notification.audience,
+      userId: notification.userId,
     });
     openModal();  
   };
@@ -231,6 +254,7 @@ export default function Notifications() {
         title: values.title!,
         message: values.message!,
         audience: values.audience!,
+        userId: values.userId,
         createdBy: user?.id,
         createdAt: new Date().toISOString().split('T')[0],
       };
@@ -308,13 +332,44 @@ export default function Notifications() {
                 { value: "todos", label: "Todos" },
                 { value: "usersPro", label: "Solo Usuarios Pro" },
                 { value: "normalUsers", label: "Solo Usuarios Normales" },
+                ...(form.values.userId
+                  ? [{ value: "usuarioEspecifico", label: "Usuario específico" }]
+                  : []),
               ]}
-              {...form.getInputProps("audience")}
+              value={form.values.userId ? "usuarioEspecifico" : form.values.audience}
+              onChange={(value) => {
+                if (value === "usuarioEspecifico") return;
+                const audienceValue = (value as "todos" | "usersPro" | "normalUsers") || "todos";
+                form.setFieldValue("audience", audienceValue);
+                form.setFieldValue("userId", undefined);
+              }}
               styles={{
                 label: { color: "var(--mantine-color-dark-1)" },
                 input: { color: "var(--mantine-color-dark-1)" },
               }}
             />
+            {!selectedNotification && (
+              <Select
+                label="Usuario específico (opcional)"
+                placeholder="Selecciona un usuario para enviar solo a él"
+                data={users
+                  .filter((user) => user.id)
+                  .map((user) => ({
+                    value: String(user.id!),
+                    label: `${user.name} (${user.email})`,
+                  }))}
+                searchable
+                clearable
+                value={form.values.userId ? String(form.values.userId) : null}
+                onChange={(value) => {
+                  form.setFieldValue("userId", value || undefined);
+                }}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { color: "var(--mantine-color-dark-1)" },
+                }}
+              />
+            )}
             <Group justify="flex-end" mt="md">
               <Button variant="subtle" color="gray" onClick={closeModal}>
                 Cancelar

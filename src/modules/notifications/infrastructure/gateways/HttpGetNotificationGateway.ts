@@ -12,6 +12,7 @@ export const HttpGetNotificationGateway = (
       title: notification.title,
       message: notification.message,
       audience: notification.audience,
+      userId: notification.userId,
       createdAt: format(notification.createdAt, "dd/MM/yyyy HH:mm"),
       createdBy: notification.creator.name,
       updatedAt: notification.updatedAt

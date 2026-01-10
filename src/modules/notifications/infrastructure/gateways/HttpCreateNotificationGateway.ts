@@ -12,6 +12,7 @@ export const HttpCreateNotificationGateway = (
       title: response.title,
       message: response.message,
       audience: response.audience,
+      userId: response.userId,
       scheduledAt: response.scheduledAt,
       createdAt: format(response.createdAt, "dd/MM/yyyy HH:mm"),
       createdBy: response?.creator?.name,
@@ -24,14 +25,18 @@ export const HttpCreateNotificationGateway = (
   return {
     createNotification: async (notification: Partial<INotification>) => {
       try {
-        const response = await httpClient.post(`/notifications`, {
+        const payload: any = {
           title: notification.title,
           message: notification.message,
           audience: notification.audience,
           scheduledAt: notification.scheduledAt,
           createdBy: notification.createdBy,
           createdAt: new Date().toISOString().split('T')[0],
-        });
+        };
+        if (notification.userId) {
+          payload.userId = notification.userId;
+        }
+        const response = await httpClient.post(`/notifications`, payload);
         if (!response.status) {
           return Promise.reject(new Error(response.error.message));
         }

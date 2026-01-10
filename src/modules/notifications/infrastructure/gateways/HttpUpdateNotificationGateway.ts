@@ -12,6 +12,7 @@ export const HttpUpdateNotificationGateway = (
       title: response.title,
       message: response.message,
       audience: response.audience,
+      userId: response.userId,
       scheduledAt: response.scheduledAt,
       createdAt: format(response.createdAt, "dd/MM/yyyy HH:mm"),
       createdBy: response.creator.name,
@@ -22,14 +23,18 @@ export const HttpUpdateNotificationGateway = (
   return {
     updateNotification: async (id: string, notification: Partial<INotification>) => {
       try {
-        const response = await httpClient.patch(`/notifications/${id}`, {
+        const payload: any = {
           title: notification.title,
           message: notification.message,
           audience: notification.audience,
           scheduledAt: notification.scheduledAt,
           updatedBy: notification.updatedBy,
           updatedAt: new Date().toISOString().split('T')[0],
-        });
+        };
+        if (notification.userId !== undefined) {
+          payload.userId = notification.userId || null;
+        }
+        const response = await httpClient.patch(`/notifications/${id}`, payload);
         if (!response.status) {
           return Promise.reject(new Error(response.error.message));
         }
