@@ -27,9 +27,9 @@ jobs:
 
       - name: Build project
         run: npm run build
-        env:
-          # Agrega aquí variables de entorno necesarias para el build si las tienes
-          # VITE_API_URL: ${{ secrets.VITE_API_URL }}
+        # Si necesitas variables de entorno para el build, descomenta y agrega:
+        # env:
+        #   VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
       - name: Deploy to VPS via SSH
         uses: appleboy/scp-action@v0.1.7
