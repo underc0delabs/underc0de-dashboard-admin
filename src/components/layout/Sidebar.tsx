@@ -20,7 +20,7 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import classes from "./Sidebar.module.css";
-import { RolesEnum } from "@/constants/RolesEnum";
+import { RolesEnum } from "@/constants/rolesEnum";
 import { routes } from "@/constants/routes";
 
 const navItems = [
