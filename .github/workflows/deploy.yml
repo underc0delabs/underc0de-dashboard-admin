@@ -30,18 +30,6 @@ jobs:
         # env:
         #   VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
-      - name: Test SSH connection
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
-          script: |
-            echo "SSH connection successful"
-            pwd
-            ls -la ${{ secrets.VPS_DEPLOY_PATH }} || echo "Directorio no existe aún"
-
       - name: Deploy to VPS via SSH
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -55,7 +43,7 @@ jobs:
           rm: true
           overwrite: true
 
-      - name: Restart web server (optional)
+      - name: Verify deployment
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -63,9 +51,6 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
-            # Descomenta y ajusta según tu configuración
-            # sudo systemctl reload nginx
-            # sudo systemctl restart nginx
-            # O si usas PM2:
-            # pm2 restart all
-            echo "Deployment completed successfully"
+            echo "Deployment verification:"
+            ls -lah ${{ secrets.VPS_DEPLOY_PATH }} | head -10
+            echo "Deployment completed successfully!"
