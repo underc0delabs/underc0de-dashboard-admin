@@ -30,25 +30,12 @@ jobs:
         # env:
         #   VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          # Verificar que la clave se guardó correctamente (sin mostrar el contenido completo)
-          head -n 1 ~/.ssh/deploy_key
-          tail -n 1 ~/.ssh/deploy_key
-          # Agregar el host a known_hosts
-          ssh-keyscan -p ${{ secrets.VPS_PORT || 22 }} -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
-          # Verificar el fingerprint de la clave
-          ssh-keygen -l -f ~/.ssh/deploy_key || true
-
       - name: Test SSH connection
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          key_path: ~/.ssh/deploy_key
+          key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
             echo "SSH connection successful"
@@ -60,7 +47,7 @@ jobs:
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          key_path: ~/.ssh/deploy_key
+          key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
           source: "dist/*"
           target: ${{ secrets.VPS_DEPLOY_PATH }}
@@ -73,7 +60,7 @@ jobs:
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          key_path: ~/.ssh/deploy_key
+          key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
             # Descomenta y ajusta según tu configuración
