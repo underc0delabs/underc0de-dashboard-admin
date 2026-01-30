@@ -77,9 +77,15 @@ Para que el workflow funcione, necesitas configurar los siguientes secrets en tu
 
    - `VPS_HOST`: La IP o dominio de tu VPS (ej: `123.456.789.0` o `mi-servidor.donweb.com`)
    - `VPS_USER`: El usuario SSH (ej: `root` o `deploy`)
-   - `VPS_SSH_KEY`: Tu clave privada SSH completa (incluyendo `-----BEGIN OPENSSH PRIVATE KEY-----` y `-----END OPENSSH PRIVATE KEY-----`)
+   - `VPS_SSH_KEY`: Tu clave privada SSH completa. **IMPORTANTE**: Debe incluir todas las líneas, incluyendo:
+     ```
+     -----BEGIN OPENSSH PRIVATE KEY-----
+     (contenido de la clave)
+     -----END OPENSSH PRIVATE KEY-----
+     ```
+     Copia TODO el contenido del archivo de clave privada, incluyendo las líneas de inicio y fin.
    - `VPS_PORT`: Puerto SSH (opcional, por defecto 22)
-   - `VPS_DEPLOY_PATH`: Ruta donde se desplegarán los archivos en el servidor (ej: `/var/www/html` o `/home/usuario/app/dist`)
+   - `VPS_DEPLOY_PATH`: Ruta donde se desplegarán los archivos en el servidor (ej: `/home/undernet/public_html`)
 
 #### Generar clave SSH
 
@@ -95,7 +101,15 @@ Luego copia la clave pública a tu servidor:
 ssh-copy-id -i ~/.ssh/id_ed25519.pub usuario@tu-servidor
 ```
 
-Y agrega la clave privada (`~/.ssh/id_ed25519`) como secret `VPS_SSH_KEY` en GitHub.
+Para agregar la clave privada en GitHub:
+1. Abre el archivo de clave privada: `cat ~/.ssh/id_ed25519`
+2. Copia **TODO** el contenido (incluyendo `-----BEGIN` y `-----END`)
+3. Pégalo completo en el secret `VPS_SSH_KEY` en GitHub
+
+**Nota**: Si tienes problemas de autenticación, verifica que:
+- La clave privada esté completa (con todas las líneas)
+- No tenga espacios extra al inicio o final
+- El formato sea correcto (OpenSSH o RSA)
 
 #### Ejecución
 
@@ -107,7 +121,7 @@ El workflow se ejecuta automáticamente cuando:
 
 - Asegúrate de que el usuario SSH tenga permisos de escritura en `VPS_DEPLOY_PATH`
 - Si usas Nginx u otro servidor web, descomenta y ajusta el paso de reinicio en el workflow
-- El workflow elimina los archivos antiguos antes de subir los nuevos (`rm_old: true`)
+- El workflow elimina los archivos antiguos antes de subir los nuevos (`rm: true`)
 
 ## Can I connect a custom domain to my Lovable project?
 
