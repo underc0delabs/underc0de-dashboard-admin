@@ -86,6 +86,7 @@ Para que el workflow funcione, necesitas configurar los siguientes secrets en tu
      Copia TODO el contenido del archivo de clave privada, incluyendo las líneas de inicio y fin.
    - `VPS_PORT`: Puerto SSH (opcional, por defecto 22)
    - `VPS_DEPLOY_PATH`: Ruta donde se desplegarán los archivos en el servidor (ej: `/home/undernet/public_html`)
+   - `VITE_API_BASE_URL`: URL base del backend API (ej: `https://api.underc0de.net/api/v1` o `http://tu-servidor-backend:3002/api/v1`)
 
 #### Generar clave SSH
 
