@@ -64,6 +64,51 @@ This project is built with:
 
 Simply open [Lovable](https://lovable.dev/projects/9f530485-2c13-4005-be33-593ab2d83389) and click on Share -> Publish.
 
+### Deploy to DonWeb VPS
+
+Este proyecto incluye un workflow de GitHub Actions para desplegar automáticamente en una VPS de DonWeb.
+
+#### Configuración de Secrets en GitHub
+
+Para que el workflow funcione, necesitas configurar los siguientes secrets en tu repositorio de GitHub:
+
+1. Ve a **Settings** > **Secrets and variables** > **Actions** en tu repositorio de GitHub
+2. Agrega los siguientes secrets:
+
+   - `VPS_HOST`: La IP o dominio de tu VPS (ej: `123.456.789.0` o `mi-servidor.donweb.com`)
+   - `VPS_USER`: El usuario SSH (ej: `root` o `deploy`)
+   - `VPS_SSH_KEY`: Tu clave privada SSH completa (incluyendo `-----BEGIN OPENSSH PRIVATE KEY-----` y `-----END OPENSSH PRIVATE KEY-----`)
+   - `VPS_PORT`: Puerto SSH (opcional, por defecto 22)
+   - `VPS_DEPLOY_PATH`: Ruta donde se desplegarán los archivos en el servidor (ej: `/var/www/html` o `/home/usuario/app/dist`)
+
+#### Generar clave SSH
+
+Si no tienes una clave SSH, puedes generarla con:
+
+```sh
+ssh-keygen -t ed25519 -C "github-actions-deploy"
+```
+
+Luego copia la clave pública a tu servidor:
+
+```sh
+ssh-copy-id -i ~/.ssh/id_ed25519.pub usuario@tu-servidor
+```
+
+Y agrega la clave privada (`~/.ssh/id_ed25519`) como secret `VPS_SSH_KEY` en GitHub.
+
+#### Ejecución
+
+El workflow se ejecuta automáticamente cuando:
+- Haces push a las ramas `main` o `master`
+- O manualmente desde la pestaña **Actions** en GitHub
+
+#### Notas
+
+- Asegúrate de que el usuario SSH tenga permisos de escritura en `VPS_DEPLOY_PATH`
+- Si usas Nginx u otro servidor web, descomenta y ajusta el paso de reinicio en el workflow
+- El workflow elimina los archivos antiguos antes de subir los nuevos (`rm_old: true`)
+
 ## Can I connect a custom domain to my Lovable project?
 
 Yes, you can!

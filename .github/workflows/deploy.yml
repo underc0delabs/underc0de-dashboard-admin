@@ -1,0 +1,59 @@
+name: Deploy to DonWeb VPS
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch: # Permite ejecución manual
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+        env:
+          # Agrega aquí variables de entorno necesarias para el build si las tienes
+          # VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          source: "dist/*"
+          target: ${{ secrets.VPS_DEPLOY_PATH }}
+          strip_components: 0
+          rm_old: true
+
+      - name: Restart web server (optional)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            # Descomenta y ajusta según tu configuración
+            # sudo systemctl reload nginx
+            # sudo systemctl restart nginx
+            # O si usas PM2:
+            # pm2 restart all
+            echo "Deployment completed successfully"
