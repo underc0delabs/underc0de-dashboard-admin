@@ -16,6 +16,7 @@ import {
   IconBell,
   IconLogout,
   IconChevronRight,
+  IconSettings,
 } from "@tabler/icons-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -52,6 +53,12 @@ const navItems = [
     icon: IconBell,
     label: "Notificaciones",
     path: routes.notifications,
+    roles: ["admin"],
+  },
+  {
+    icon: IconSettings,
+    label: "Valor suscripción",
+    path: routes.environments,
     roles: ["admin"],
   },
 ];

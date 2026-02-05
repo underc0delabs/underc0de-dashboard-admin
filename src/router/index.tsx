@@ -10,6 +10,7 @@ import Commerces from "@/modules/commerces/views/Commerces";
 import { RolesEnum } from "@/constants/rolesEnum";
 import AdminUsers from "@/modules/adminUsers/views/AdminUsers";
 import Notifications from "@/modules/notifications/views/Notifications";
+import Environments from "@/modules/environments/views/Environments";
 import { routes } from "@/constants/routes";
 
 const router = createBrowserRouter([
@@ -56,6 +57,14 @@ const router = createBrowserRouter([
         element: (
           <RoleBasedRoute allowedRoles={[RolesEnum.ADMIN_ROLE]}>
             <Notifications />
+          </RoleBasedRoute>
+        )
+      },
+      {
+        path: routes.environments,
+        element: (
+          <RoleBasedRoute allowedRoles={[RolesEnum.ADMIN_ROLE]}>
+            <Environments />
           </RoleBasedRoute>
         )
       },

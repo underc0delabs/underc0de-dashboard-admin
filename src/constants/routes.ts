@@ -4,4 +4,5 @@ export const routes = {
   commerces: "commerces",
   adminUsers: "admin-users",
   notifications: "notifications",
+  environments: "environments",
 };

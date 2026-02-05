@@ -8,5 +8,6 @@ export {loginModuleInitialize} from './modules/login/loginModuleInitialize';
 export {dashboardModuleInitialize} from './modules/dashboard/dashboardModule';
 export {adminUsersModuleInitialize} from './modules/adminUsers/adminUsersModuleInitialize';
 export {appUsersModuleInitialize} from './modules/appUsers/appUsersModuleInitialize';
+export {environmentsModuleInitialize} from './modules/environments/environmentsModuleInitialize';
 export {merchantsModuleInitialize} from './modules/commerces/merchantsModuleInitialize';
 export {notificationsModuleInitialize} from './modules/notifications/notificationsModuleInitialize';
