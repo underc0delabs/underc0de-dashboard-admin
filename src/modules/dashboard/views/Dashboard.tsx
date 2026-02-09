@@ -13,7 +13,6 @@ import {
   IconBuildingStore,
   IconBell,
 } from "@tabler/icons-react";
-import { MainLayout } from "@/components/layout/MainLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { StatsCard } from "@/components/common/StatsCard";
 import { mockUsers, mockCommerces, mockNotifications } from "@/data/mockData";
@@ -64,7 +63,7 @@ const Dashboard = () => {
   };
 
   return (
-    <MainLayout>
+    <>
       <PageHeader title="Dashboard" description="Vista general del sistema" />
 
       <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} mb="xl">
@@ -167,7 +166,7 @@ const Dashboard = () => {
           </Group>
         </Paper>
       </SimpleGrid> */}
-    </MainLayout>
+    </>
   );
 }
 

@@ -23,6 +23,7 @@ const App: React.FC = () => {
     app.environmentsModuleInitialize(dependencyManagerRef.current);
     app.merchantsModuleInitialize(dependencyManagerRef.current);
     app.notificationsModuleInitialize(dependencyManagerRef.current);
+    app.profileModuleInitialize(dependencyManagerRef.current);
     setIsLoaded(true);
   }, []);
 

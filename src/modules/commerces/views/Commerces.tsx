@@ -17,7 +17,6 @@ import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconPhoto, IconTrash } from "@tabler/icons-react";
-import { MainLayout } from "@/components/layout/MainLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { DataTable, Column, StatusBadge } from "@/components/common/DataTable";
 import { FilterBar, FilterOption } from "@/components/common/FilterBar";
@@ -293,7 +292,7 @@ export default function Commerces() {
   };
 
   return (
-    <MainLayout>
+    <>
       <PageHeader
         title="Comercios"
         description="Gestiona los comercios de la plataforma"
@@ -510,6 +509,6 @@ export default function Commerces() {
         message={`¿Estás seguro de que deseas eliminar ${selectedCommerce?.name}? Esta acción no se puede deshacer.`}
         confirmLabel="Eliminar"
       />
-    </MainLayout>
+    </>
   );
 }

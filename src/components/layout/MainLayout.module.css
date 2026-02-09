@@ -6,12 +6,51 @@
 
 .main {
   flex: 1;
-  margin-left: 140px;
+  min-width: 0;
+  margin-left: 280px; /* mismo ancho que el sidebar */
   margin-right: 20px;
   margin-top: 20px;
   min-height: 100vh;
   padding-left: var(--mantine-spacing-xl);
-  width: calc(100% - 120px);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.mobileHeader {
+  display: none;
+  align-items: center;
+  gap: var(--mantine-spacing-md);
+  padding: var(--mantine-spacing-md) 0;
+  margin-bottom: var(--mantine-spacing-sm);
+}
+
+.burgerButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mantine-color-gray-3);
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-xs);
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.burgerButton:hover {
+  background-color: var(--mantine-color-dark-6);
+  color: var(--mantine-color-gray-1);
+}
+
+.mobileTitle {
+  font-size: var(--mantine-font-size-lg);
+  font-weight: 700;
+  color: var(--mantine-color-gray-1);
 }
 
 /* Responsive design */
@@ -20,6 +59,10 @@
     margin-left: 0;
     width: 100%;
     padding: var(--mantine-spacing-md);
+  }
+
+  .mobileHeader {
+    display: flex;
   }
 }
 

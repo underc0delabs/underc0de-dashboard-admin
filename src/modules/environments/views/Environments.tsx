@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { TextInput, Button, Stack, Group, Card, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { MainLayout } from "@/components/layout/MainLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { IEnvironmentsPresenter } from "../core/presentation/iEnvironmentsPresenter";
 import { environmentsPresenterProvider } from "../infrastructure/presentation/presenterProvider";
@@ -81,8 +80,7 @@ export default function Environments() {
   };
 
   return (
-    <MainLayout>
-      <Stack gap="md">
+    <Stack gap="md">
         <PageHeader
           title="Configuración de valor suscripción"
           description="Gestiona el valor de la suscripción"
@@ -113,6 +111,5 @@ export default function Environments() {
           </Stack>
         </Card>
       </Stack>
-    </MainLayout>
   );
 }

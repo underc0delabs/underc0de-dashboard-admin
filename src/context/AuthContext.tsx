@@ -14,6 +14,7 @@ interface AuthContextType {
   token: string | null;
   login: (token: string, userData: AdminUser) => void;
   logout: () => void;
+  updateUser: (data: Partial<AdminUser>) => void;
   loading: boolean;
   hasPermission: (requiredRole: UserRole) => boolean;
 }
@@ -102,6 +103,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.href = "/login";
   }, []);
 
+  const updateUser = useCallback((data: Partial<AdminUser>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...data };
+      localStorage.setItem("user", JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   const hasPermission = useCallback(
     (requiredRole: UserRole): boolean => {
       if (!user) return false;
@@ -117,6 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     token,
     login,
     logout,
+    updateUser,
     loading,
     hasPermission,
   };

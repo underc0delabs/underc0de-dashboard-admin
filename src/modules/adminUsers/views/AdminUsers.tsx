@@ -13,7 +13,6 @@ import {
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { MainLayout } from "@/components/layout/MainLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { DataTable, Column } from "@/components/common/DataTable";
 import { FilterBar, FilterOption } from "@/components/common/FilterBar";
@@ -276,7 +275,7 @@ export default function AdminUsers() {
   };
 
   return (
-    <MainLayout>
+    <>
       <PageHeader
         title="Usuarios Admin"
         description="Gestiona los usuarios con acceso al panel de administración"
@@ -384,6 +383,6 @@ export default function AdminUsers() {
         message={`¿Estás seguro de que deseas eliminar a ${selectedUser?.name}? Esta acción no se puede deshacer.`}
         confirmLabel="Eliminar"
       />
-    </MainLayout>
+    </>
   );
 }

@@ -24,7 +24,13 @@ export const RoleBasedRoute: React.FC<RoleBasedRouteProps> = ({
       </div>
     );
   }
-  if (!user || !allowedRoles.includes(user.role as RolesEnum)) {
+  const userRoleNormalized = user?.role?.toLowerCase();
+  const hasAllowedRole =
+    user &&
+    allowedRoles.some(
+      (role) => role.toLowerCase() === userRoleNormalized
+    );
+  if (!hasAllowedRole) {
     return <Navigate to={redirectTo} state={{ from: location.pathname }} replace />;
   }
 

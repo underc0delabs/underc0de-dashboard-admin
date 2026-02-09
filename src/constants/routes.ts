@@ -5,4 +5,5 @@ export const routes = {
   adminUsers: "admin-users",
   notifications: "notifications",
   environments: "environments",
+  profile: "profile",
 };
