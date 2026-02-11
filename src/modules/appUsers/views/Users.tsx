@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Modal, TextInput, Select, Stack, Button, Group } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
@@ -80,7 +80,21 @@ export default function Users() {
   );
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
-  const viewHandlers: IAppUsersViews = {
+  const presenterRef = useRef<IAppUsersPresenter>(null as unknown as IAppUsersPresenter);
+  presenterRef.current = presenter;
+
+  const viewHandlersRef = useRef<IAppUsersViews>({
+    getUsersSuccess: () => {},
+    getUsersError: () => {},
+    updateUserSuccess: () => {},
+    updateUserError: () => {},
+    createUserSuccess: () => {},
+    createUserError: () => {},
+    deleteUserSuccess: () => {},
+    deleteUserError: () => {},
+  });
+
+  viewHandlersRef.current = {
     getUsersSuccess: (users: IAppUser[]) => {
       setUsers(users);
     },
@@ -99,6 +113,7 @@ export default function Users() {
         color: "green",
       });
       closeModal();
+      presenterRef.current?.getAppUsers?.();
     },
     updateUserError: (error: string) => {
       notifications.show({
@@ -115,6 +130,7 @@ export default function Users() {
         color: "green",
       });
       closeModal();
+      presenterRef.current?.getAppUsers?.();
     },
     createUserError: (error: string) => {
       notifications.show({
@@ -123,11 +139,10 @@ export default function Users() {
         color: "red",
       });
     },
-    deleteUserSuccess: function (success: boolean): void {
+    deleteUserSuccess: (success: boolean) => {
       if (success && deletingUserId) {
         setUsers((prev) => {
           const updated = prev.filter((u) => u.id !== deletingUserId);
-          // Si la página actual queda vacía y no es la primera página, volver a la anterior
           const remainingOnCurrentPage = updated.slice(
             (currentPage - 1) * itemsPerPage,
             currentPage * itemsPerPage
@@ -137,10 +152,7 @@ export default function Users() {
           }
           return updated;
         });
-        // Refrescar datos del backend para asegurar sincronización
-        if (isLoaded) {
-          presenter.getAppUsers();
-        }
+        presenterRef.current?.getAppUsers?.();
         setDeletingUserId(null);
       }
       notifications.show({
@@ -151,7 +163,7 @@ export default function Users() {
       closeDeleteModal();
       setSelectedUser(null);
     },
-    deleteUserError: function (error: string): void {
+    deleteUserError: (error: string) => {
       notifications.show({
         title: "Error al eliminar el usuario",
         message: error,
@@ -160,9 +172,31 @@ export default function Users() {
     },
   };
 
+  const viewHandlers = useMemo(
+    () => ({
+      getUsersSuccess: (data: IAppUser[]) =>
+        viewHandlersRef.current.getUsersSuccess(data),
+      getUsersError: (e: string) => viewHandlersRef.current.getUsersError(e),
+      updateUserSuccess: (data: IAppUser) =>
+        viewHandlersRef.current.updateUserSuccess(data),
+      updateUserError: (e: string) =>
+        viewHandlersRef.current.updateUserError(e),
+      createUserSuccess: (data: IAppUser) =>
+        viewHandlersRef.current.createUserSuccess(data),
+      createUserError: (e: string) =>
+        viewHandlersRef.current.createUserError(e),
+      deleteUserSuccess: (s: boolean) =>
+        viewHandlersRef.current.deleteUserSuccess(s),
+      deleteUserError: (e: string) =>
+        viewHandlersRef.current.deleteUserError(e),
+    }),
+    []
+  );
+
   useEffect(() => {
-    const presenter = presenterProvider.getPresenter(viewHandlers);
-    setPresenter(presenter);
+    const p = presenterProvider.getPresenter(viewHandlers);
+    presenterRef.current = p;
+    setPresenter(p);
     setIsLoaded(true);
   }, []);
 

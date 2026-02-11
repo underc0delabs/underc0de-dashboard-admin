@@ -22,10 +22,6 @@ export const HttpGetAppUserGateway = (
         }
       }
 
-      const fullName = user.name 
-        ? (user.lastname ? `${user.name} ${user.lastname}` : user.name)
-        : user.username || '';
-
       const activePlan = user.subscriptionPlans?.find(
         (plan: any) => plan.status === 'ACTIVE'
       );
@@ -37,7 +33,7 @@ export const HttpGetAppUserGateway = (
       return {
         id: String(user.id),
         email: user.email,
-        name: fullName,
+        name: user.name,
         phone: user.phone,
         subscription,
         subscriptionPlan,
