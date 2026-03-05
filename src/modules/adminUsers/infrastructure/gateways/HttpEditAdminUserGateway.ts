@@ -20,7 +20,7 @@ export const HttpEditAdminUserGateway = (
   return {
     updateAdminUser: async (id: string, user: Partial<IAdminUser>) => {
       try {
-        const response = await httpClient.put(`/admin-users/${id}`, {
+        const response = await httpClient.patch(`/admin-users/${id}`, {
             ...user,
             rol: user.role
         });

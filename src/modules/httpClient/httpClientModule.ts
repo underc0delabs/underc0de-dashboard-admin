@@ -78,15 +78,18 @@ const configResponseInterceptor = (axiosInstance: AxiosInstance) => {
       }
     },
     error => {
-      if (isServerError(error.response)) {
+      if (error?.response && isServerError(error.response)) {
         redirectToErrorScreen(error);
       }
-      if (error.response.status === HttpStatusCode.UNAUTHORIZED) {
+      if (error?.response?.status === HttpStatusCode.UNAUTHORIZED) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = '/login';
       }
-      return Promise.reject(toGeneralErrorResponse(error.response));
+      const rejectValue = error?.response
+        ? toGeneralErrorResponse(error.response)
+        : createHttpResponse(-1, {}, error?.message ?? 'Network error', false);
+      return Promise.reject(rejectValue);
     },
   );
 };

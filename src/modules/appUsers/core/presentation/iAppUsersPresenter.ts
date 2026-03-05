@@ -5,5 +5,6 @@ export interface IAppUsersPresenter {
   updateAppUser(id: string, user: Partial<IAppUser>): void;
   createAppUser(user: Partial<IAppUser>): void;
   deleteAppUser(id: string): void;
+  syncMercadoPago(): void;
 }
 

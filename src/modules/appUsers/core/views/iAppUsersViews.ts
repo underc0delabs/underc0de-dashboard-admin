@@ -9,5 +9,7 @@ export interface IAppUsersViews {
   createUserError: (error: string) => void;
   deleteUserSuccess: (success: boolean) => void;
   deleteUserError: (error: string) => void;
+  syncMercadoPagoSuccess: () => void;
+  syncMercadoPagoError: (error: string) => void;
 }
 

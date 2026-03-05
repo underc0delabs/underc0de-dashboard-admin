@@ -74,6 +74,7 @@ export default function Users() {
   ] = useDisclosure(false);
   const [selectedUser, setSelectedUser] = useState<IAppUser | null>(null);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+  const [syncLoading, setSyncLoading] = useState<boolean>(false);
   const presenterProvider = appUsersPresenterProvider();
   const [presenter, setPresenter] = useState<IAppUsersPresenter>(
     {} as IAppUsersPresenter
@@ -92,6 +93,8 @@ export default function Users() {
     createUserError: () => {},
     deleteUserSuccess: () => {},
     deleteUserError: () => {},
+    syncMercadoPagoSuccess: () => {},
+    syncMercadoPagoError: () => {},
   });
 
   viewHandlersRef.current = {
@@ -170,6 +173,25 @@ export default function Users() {
         color: "red",
       });
     },
+    syncMercadoPagoSuccess: () => {
+      setSyncLoading(false);
+      notifications.show({
+        title: "Sincronización iniciada",
+        message: "Los datos se actualizarán en unos segundos.",
+        color: "green",
+      });
+      setTimeout(() => {
+        presenterRef.current?.getAppUsers?.();
+      }, 8000);
+    },
+    syncMercadoPagoError: (error: string) => {
+      setSyncLoading(false);
+      notifications.show({
+        title: "Error al sincronizar MercadoPago",
+        message: error,
+        color: "red",
+      });
+    },
   };
 
   const viewHandlers = useMemo(
@@ -189,6 +211,10 @@ export default function Users() {
         viewHandlersRef.current.deleteUserSuccess(s),
       deleteUserError: (e: string) =>
         viewHandlersRef.current.deleteUserError(e),
+      syncMercadoPagoSuccess: () =>
+        viewHandlersRef.current.syncMercadoPagoSuccess(),
+      syncMercadoPagoError: (e: string) =>
+        viewHandlersRef.current.syncMercadoPagoError(e),
     }),
     []
   );
@@ -291,6 +317,13 @@ export default function Users() {
         message: "Refrescando datos de usuarios...",
         color: "blue",
       });
+    }
+  };
+
+  const handleSyncMercadoPago = () => {
+    if (isLoaded && !syncLoading) {
+      setSyncLoading(true);
+      presenter.syncMercadoPago();
     }
   };
 
@@ -416,6 +449,22 @@ export default function Users() {
 
       <Group justify="space-between" mb="md">
         <Group gap="md">
+          <Button
+            leftSection={<IconRefresh size={18} />}
+            onClick={handleSyncMercadoPago}
+            loading={syncLoading}
+            variant="light"
+            color="blue"
+            styles={{
+              root: {
+                backgroundColor: "var(--mantine-color-dark-7)",
+                color: "var(--mantine-color-blue-6)",
+                borderColor: "var(--mantine-color-dark-5)",
+              },
+            }}
+          >
+            Sincronizar MercadoPago
+          </Button>
           <Button
             leftSection={<IconFileDownload size={18} />}
             onClick={handleExportToExcel}

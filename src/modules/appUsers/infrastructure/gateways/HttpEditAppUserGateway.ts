@@ -23,7 +23,7 @@ export const HttpEditAppUserGateway = (
   return {
     updateAppUser: async (id: string, user: Partial<IAppUser>) => {
       try {
-        const response = await httpClient.put(`/users/${id}`, user);
+        const response = await httpClient.patch(`/users/${id}`, user);
         if (!response.status) {
           return Promise.reject(new Error(response.error.message));
         }
