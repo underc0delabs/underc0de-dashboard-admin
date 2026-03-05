@@ -52,8 +52,9 @@ const configRequestInterceptor = (axiosInstance: AxiosInstance) => {
     if (request.headers === undefined) {
       request.headers = {};
     }
-    request.headers['Authorization'] = 'Bearer ' + localStorage.getItem('token');
-    if (request.data) {
+    const token = localStorage.getItem('token');
+    if (token) {
+      request.headers['Authorization'] = `Bearer ${token}`;
     }
     return request;
   });
