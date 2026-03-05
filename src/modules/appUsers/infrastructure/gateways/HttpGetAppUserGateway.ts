@@ -33,6 +33,7 @@ export const HttpGetAppUserGateway = (
       return {
         id: String(user.id),
         email: user.email,
+        mercadopago_email: user.mercadopago_email,
         name: user.name,
         phone: user.phone,
         subscription,

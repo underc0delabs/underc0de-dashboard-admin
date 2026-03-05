@@ -45,6 +45,11 @@ const filters: FilterOption[] = [
 const columns: Column<IAppUser>[] = [
   { key: "name", label: "Nombre" },
   { key: "email", label: "Email" },
+  {
+    key: "mercadopago_email",
+    label: "Email MercadoPago",
+    render: (user) => user.mercadopago_email?.trim() || "-",
+  },
   { key: "phone", label: "Teléfono", render: (user) => user.phone || "-" },
   {
     key: "subscription",

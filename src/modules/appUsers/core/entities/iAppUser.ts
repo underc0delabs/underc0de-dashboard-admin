@@ -3,6 +3,7 @@ export type SubscriptionStatus = 'active' | 'trial' | 'expired' | 'cancelled' | 
 export interface IAppUser {
   id?: string;
   email: string;
+  mercadopago_email?: string;
   name: string;
   phone?: string;
   subscription: SubscriptionStatus;
