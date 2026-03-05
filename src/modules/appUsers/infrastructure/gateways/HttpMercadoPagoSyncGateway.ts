@@ -1,5 +1,8 @@
 import { IHttpClient } from "@/modules/httpClient/interfaces";
-import { IMercadoPagoSyncGateway } from "../../core/gateways/iMercadoPagoSyncGateway";
+import {
+  IMercadoPagoSyncGateway,
+  MercadoPagoSyncStatus,
+} from "../../core/gateways/iMercadoPagoSyncGateway";
 
 export const HttpMercadoPagoSyncGateway = (
   httpClient: IHttpClient
@@ -15,6 +18,22 @@ export const HttpMercadoPagoSyncGateway = (
             : "Error al sincronizar MercadoPago");
         return Promise.reject(new Error(msg));
       }
+    },
+    getSyncStatus: async (): Promise<MercadoPagoSyncStatus> => {
+      const response = await httpClient.get("/cron/mercadopago-sync/status");
+      const result = response.data;
+      if (result) {
+        return {
+          status: result.status ?? "idle",
+          startedAt: result.startedAt,
+          finishedAt: result.finishedAt,
+          subscriptionsCreated: result.subscriptionsCreated ?? 0,
+          subscriptionsUpdated: result.subscriptionsUpdated ?? 0,
+          paymentsSaved: result.paymentsSaved ?? 0,
+          error: result.error,
+        };
+      }
+      return { status: "idle" };
     },
   };
 };

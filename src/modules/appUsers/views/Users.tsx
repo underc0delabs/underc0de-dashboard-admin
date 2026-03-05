@@ -82,7 +82,16 @@ export default function Users() {
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   const presenterRef = useRef<IAppUsersPresenter>(null as unknown as IAppUsersPresenter);
+  const syncPollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   presenterRef.current = presenter;
+
+  useEffect(() => {
+    return () => {
+      if (syncPollIntervalRef.current) {
+        clearInterval(syncPollIntervalRef.current);
+      }
+    };
+  }, []);
 
   const viewHandlersRef = useRef<IAppUsersViews>({
     getUsersSuccess: () => {},
@@ -174,15 +183,98 @@ export default function Users() {
       });
     },
     syncMercadoPagoSuccess: () => {
-      setSyncLoading(false);
       notifications.show({
-        title: "Sincronización iniciada",
-        message: "Los datos se actualizarán en unos segundos.",
-        color: "green",
+        id: "mp-sync",
+        title: "Sincronización en curso",
+        message: "Esperando resultado de MercadoPago...",
+        color: "blue",
+        loading: true,
+        autoClose: false,
       });
-      setTimeout(() => {
-        presenterRef.current?.getAppUsers?.();
-      }, 8000);
+
+      const pollInterval = 2000;
+      const maxAttempts = 60;
+      let attempts = 0;
+
+      const poll = async () => {
+        try {
+          const status = await presenterRef.current?.getMercadoPagoSyncStatus?.();
+          if (!status) return;
+
+          if (status.status === "completed") {
+            const { subscriptionsCreated, subscriptionsUpdated, paymentsSaved } =
+              status;
+            const parts: string[] = [];
+            if ((subscriptionsCreated ?? 0) > 0)
+              parts.push(`${subscriptionsCreated} creadas`);
+            if ((subscriptionsUpdated ?? 0) > 0)
+              parts.push(`${subscriptionsUpdated} actualizadas`);
+            if ((paymentsSaved ?? 0) > 0)
+              parts.push(`${paymentsSaved} pagos guardados`);
+            const summary =
+              parts.length > 0 ? parts.join(", ") : "Sin cambios";
+
+            notifications.update({
+              id: "mp-sync",
+              title: "Sincronización completada",
+              message: summary,
+              color: "green",
+              loading: false,
+              autoClose: 5000,
+            });
+            setSyncLoading(false);
+            presenterRef.current?.getAppUsers?.();
+            return true;
+          }
+
+          if (status.status === "failed") {
+            notifications.update({
+              id: "mp-sync",
+              title: "Error en sincronización",
+              message: status.error ?? "Error desconocido",
+              color: "red",
+              loading: false,
+              autoClose: 5000,
+            });
+            setSyncLoading(false);
+            return true;
+          }
+        } catch {
+          // Ignorar errores de poll, reintentar
+        }
+        attempts++;
+        if (attempts >= maxAttempts) {
+          notifications.update({
+            id: "mp-sync",
+            title: "Sincronización",
+            message: "Tiempo de espera agotado. Refrescando datos...",
+            color: "yellow",
+            loading: false,
+            autoClose: 5000,
+          });
+          setSyncLoading(false);
+          presenterRef.current?.getAppUsers?.();
+          return true;
+        }
+        return false;
+      };
+
+      const intervalId = setInterval(async () => {
+        const done = await poll();
+        if (done) {
+          clearInterval(intervalId);
+          syncPollIntervalRef.current = null;
+        }
+      }, pollInterval);
+      syncPollIntervalRef.current = intervalId;
+
+      // Primera verificación inmediata (por si ya terminó)
+      poll().then((done) => {
+        if (done && syncPollIntervalRef.current === intervalId) {
+          clearInterval(intervalId);
+          syncPollIntervalRef.current = null;
+        }
+      });
     },
     syncMercadoPagoError: (error: string) => {
       setSyncLoading(false);

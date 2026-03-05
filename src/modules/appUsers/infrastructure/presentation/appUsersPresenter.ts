@@ -54,6 +54,7 @@ export const AppUsersPresenter = (
           viewHandlers.syncMercadoPagoError(msg);
         });
     },
+    getMercadoPagoSyncStatus: () => syncMercadoPagoAction.getSyncStatus(),
   };
 };
 

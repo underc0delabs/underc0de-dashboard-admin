@@ -1,4 +1,5 @@
 import { IAppUser } from "../entities/iAppUser";
+import { MercadoPagoSyncStatus } from "../gateways/iMercadoPagoSyncGateway";
 
 export interface IAppUsersPresenter {
   getAppUsers(): void;
@@ -6,5 +7,6 @@ export interface IAppUsersPresenter {
   createAppUser(user: Partial<IAppUser>): void;
   deleteAppUser(id: string): void;
   syncMercadoPago(): void;
+  getMercadoPagoSyncStatus(): Promise<MercadoPagoSyncStatus>;
 }
 
