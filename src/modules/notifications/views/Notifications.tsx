@@ -47,6 +47,7 @@ const audienceLabels: Record<string, string> = {
   todos: "Todos",
   usersPro: "Usuarios Pro",
   normalUsers: "Usuarios Normales",
+  usuarioEspecifico: "Usuario específico",
 };
 
 const columns: Column<INotification>[] = [
@@ -252,7 +253,7 @@ export default function Notifications() {
       const newNotification: Partial<INotification> = {
         title: values.title!,
         message: values.message!,
-        audience: values.audience!,
+        audience: values.userId ? "usuarioEspecifico" : values.audience!,
         userId: values.userId,
         createdBy: user?.id,
         createdAt: new Date().toISOString().split('T')[0],
@@ -362,6 +363,10 @@ export default function Notifications() {
                 value={form.values.userId ? String(form.values.userId) : null}
                 onChange={(value) => {
                   form.setFieldValue("userId", value || undefined);
+                  form.setFieldValue(
+                    "audience",
+                    value ? "usuarioEspecifico" : "todos"
+                  );
                 }}
                 styles={{
                   label: { color: "var(--mantine-color-dark-1)" },
