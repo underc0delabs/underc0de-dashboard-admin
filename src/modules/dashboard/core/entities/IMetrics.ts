@@ -3,4 +3,6 @@ export interface IMetrics {
     merchants: number;
     notifications: number;
     subscriptions: number;
+    subscriptionsActive?: number;
+    subscriptionsCancelled?: number;
 }

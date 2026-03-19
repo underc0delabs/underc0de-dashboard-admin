@@ -12,10 +12,10 @@ import {
   IconUsers,
   IconBuildingStore,
   IconBell,
+  IconCreditCard,
 } from "@tabler/icons-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { StatsCard } from "@/components/common/StatsCard";
-import { mockUsers, mockCommerces, mockNotifications } from "@/data/mockData";
 import classes from "./Dashboard.module.css";
 import { IMetrics } from "../core/entities/IMetrics";
 import { useEffect, useState } from "react";
@@ -32,10 +32,12 @@ const Dashboard = () => {
     merchants: 0,
     notifications: 0,
     subscriptions: 0,
+    subscriptionsActive: 0,
+    subscriptionsCancelled: 0,
   });
   const viewHandlers: IDashboardView = {
-    getMetrics: (metrics: IMetrics) => {
-      setMetrics(metrics);
+    getMetrics: (m: IMetrics) => {
+      setMetrics(m);
     },
     getMetricsError: (error: Error) => {
       console.error(error);
@@ -53,20 +55,16 @@ const Dashboard = () => {
     }
   }, [isLoaded]);
 
-  const subscriptionStats = {
-    active: mockUsers.filter((u) => u.subscription === "active").length,
-    trial: mockUsers.filter((u) => u.subscription === "trial").length,
-    expired: mockUsers.filter((u) => u.subscription === "expired").length,
-    none: mockUsers.filter(
-      (u) => u.subscription === "none" || u.subscription === "cancelled"
-    ).length,
-  };
+  const active = metrics.subscriptionsActive ?? 0;
+  const cancelled = metrics.subscriptionsCancelled ?? 0;
+  const totalSubs = metrics.subscriptions ?? active + cancelled;
+  const totalForChart = Math.max(totalSubs, 1);
 
   return (
     <>
       <PageHeader title="Dashboard" description="Vista general del sistema" />
 
-      <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} mb="xl">
+      <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} mb="xl">
         <StatsCard
           title="Usuarios Totales"
           value={metrics.users}
@@ -82,9 +80,14 @@ const Dashboard = () => {
           value={metrics.notifications}
           icon={<IconBell size={24} />}
         />
+        <StatsCard
+          title="Suscripciones Pro"
+          value={metrics.subscriptions ?? 0}
+          icon={<IconCreditCard size={24} />}
+        />
       </SimpleGrid>
 
-      {/* <SimpleGrid cols={{ base: 1, lg: 2 }} mb="xl">
+      <SimpleGrid cols={{ base: 1, lg: 2 }} mb="xl">
         <Paper p="lg" radius="md" className={classes.card}>
           <Title order={4} c="white" mb="lg">
             Estado de Suscripciones
@@ -96,19 +99,11 @@ const Dashboard = () => {
               roundCaps
               sections={[
                 {
-                  value: (subscriptionStats.active / mockUsers.length) * 100,
+                  value: (active / totalForChart) * 100,
                   color: "green",
                 },
                 {
-                  value: (subscriptionStats.trial / mockUsers.length) * 100,
-                  color: "blue",
-                },
-                {
-                  value: (subscriptionStats.expired / mockUsers.length) * 100,
-                  color: "orange",
-                },
-                {
-                  value: (subscriptionStats.none / mockUsers.length) * 100,
+                  value: (cancelled / totalForChart) * 100,
                   color: "gray",
                 },
               ]}
@@ -116,7 +111,7 @@ const Dashboard = () => {
                 <Center>
                   <Stack gap={0} align="center">
                     <Text fw={700} size="xl" c="white">
-                      {mockUsers.length}
+                      {totalSubs}
                     </Text>
                     <Text size="xs" c="dimmed">
                       Total
@@ -132,25 +127,7 @@ const Dashboard = () => {
                   style={{ backgroundColor: "var(--mantine-color-green-6)" }}
                 />
                 <Text size="sm" c="dimmed">
-                  Activas: {subscriptionStats.active}
-                </Text>
-              </Group>
-              <Group gap="xs">
-                <div
-                  className={classes.dot}
-                  style={{ backgroundColor: "var(--mantine-color-blue-6)" }}
-                />
-                <Text size="sm" c="dimmed">
-                  Prueba: {subscriptionStats.trial}
-                </Text>
-              </Group>
-              <Group gap="xs">
-                <div
-                  className={classes.dot}
-                  style={{ backgroundColor: "var(--mantine-color-orange-6)" }}
-                />
-                <Text size="sm" c="dimmed">
-                  Expiradas: {subscriptionStats.expired}
+                  Activas: {active}
                 </Text>
               </Group>
               <Group gap="xs">
@@ -159,13 +136,13 @@ const Dashboard = () => {
                   style={{ backgroundColor: "var(--mantine-color-gray-6)" }}
                 />
                 <Text size="sm" c="dimmed">
-                  Sin suscripción: {subscriptionStats.none}
+                  Canceladas: {cancelled}
                 </Text>
               </Group>
             </Stack>
           </Group>
         </Paper>
-      </SimpleGrid> */}
+      </SimpleGrid>
     </>
   );
 }

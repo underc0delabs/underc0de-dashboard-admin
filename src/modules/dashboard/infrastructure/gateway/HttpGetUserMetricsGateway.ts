@@ -7,10 +7,12 @@ export const HttpGetUserMetricsGateway = (
 ): IGetUsersMetricsGateway => {
   const toUserMetrics = (response: any): IMetrics => {
     return {
-      users: response.users,
-      merchants: response.merchants,
-      notifications: response.notifications,
-      subscriptions: 0,
+      users: response.users ?? 0,
+      merchants: response.merchants ?? 0,
+      notifications: response.notifications ?? 0,
+      subscriptions: response.subscriptions ?? response.subscriptionsActive ?? 0,
+      subscriptionsActive: response.subscriptionsActive ?? 0,
+      subscriptionsCancelled: response.subscriptionsCancelled ?? 0,
     };
   };
   return {

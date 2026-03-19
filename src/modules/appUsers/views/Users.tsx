@@ -37,6 +37,8 @@ const filters: FilterOption[] = [
     type: "select",
     options: [
       { value: "active", label: "Activa" },
+      { value: "expired", label: "Expirada" },
+      { value: "cancelled", label: "Cancelada" },
       { value: "none", label: "Sin suscripción" },
     ],
   },

@@ -189,6 +189,8 @@ export function DataTable<T extends { id?: string }>({
 export function StatusBadge({ status }: { status: string }) {
   const colorMap: Record<string, string> = {
     active: "green",
+    Activo: "green",
+    Inactivo: "gray",
     inactive: "gray",
     pending: "yellow",
     suspended: "red",
@@ -203,7 +205,9 @@ export function StatusBadge({ status }: { status: string }) {
   };
 
   const labelMap: Record<string, string> = {
-    active: "Activo",
+    active: "Activa",
+    Activo: "Activo",
+    Inactivo: "Inactivo",
     inactive: "Inactivo",
     pending: "Pendiente",
     suspended: "Suspendido",
