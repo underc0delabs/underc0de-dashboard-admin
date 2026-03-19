@@ -35,6 +35,8 @@ export const HttpGetAppUserGateway = (
         email: user.email,
         mercadopago_email: user.mercadopago_email,
         name: user.name,
+        fullName: user.fullName ? user.fullName : [user.name, user.lastname].filter(Boolean).join(" ").trim() || user.name,
+        username: user.username,
         phone: user.phone,
         subscription,
         subscriptionPlan,

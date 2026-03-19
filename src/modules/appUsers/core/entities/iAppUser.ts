@@ -5,6 +5,8 @@ export interface IAppUser {
   email: string;
   mercadopago_email?: string;
   name: string;
+  fullName?: string;
+  username?: string;
   phone?: string;
   subscription: SubscriptionStatus;
   subscriptionPlan?: string;

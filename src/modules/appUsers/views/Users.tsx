@@ -20,7 +20,7 @@ const filters: FilterOption[] = [
     key: "search",
     label: "Buscar",
     type: "text",
-    placeholder: "Buscar por nombre o email...",
+    placeholder: "Buscar por nombre, usuario o email...",
   },
   {
     key: "status",
@@ -45,7 +45,8 @@ const filters: FilterOption[] = [
 ];
 
 const columns: Column<IAppUser>[] = [
-  { key: "name", label: "Nombre" },
+  { key: "fullName", label: "Nombre completo", render: (user) => user.fullName || user.name || "-" },
+  { key: "username", label: "Nombre de usuario", render: (user) => user.username || "-" },
   { key: "email", label: "Email" },
   {
     key: "mercadopago_email",
@@ -354,9 +355,13 @@ export default function Users() {
     return users.filter((user) => {
       if (filterValues.search) {
         const search = filterValues.search.toLowerCase();
+        const fullName = (user.fullName || user.name || "").toLowerCase();
+        const username = (user.username || "").toLowerCase();
+        const email = (user.email || "").toLowerCase();
         if (
-          !user.name.toLowerCase().includes(search) &&
-          !user.email.toLowerCase().includes(search)
+          !fullName.includes(search) &&
+          !username.includes(search) &&
+          !email.includes(search)
         ) {
           return false;
         }
@@ -439,7 +444,8 @@ export default function Users() {
     }
 
     const excelData = proUsers.map((user) => ({
-      Nombre: user.name,
+      "Nombre completo": user.fullName || user.name,
+      "Nombre de usuario": user.username || "-",
       Email: user.email,
       Teléfono: user.phone || "-",
       Suscripción: user.subscription,
