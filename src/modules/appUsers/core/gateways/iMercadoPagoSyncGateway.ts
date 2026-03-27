@@ -8,7 +8,15 @@ export interface MercadoPagoSyncStatus {
   error?: string;
 }
 
+export interface MercadoPagoReconcileUserResult {
+  mp_status: string;
+  local_subscription_status: string;
+  user_is_pro: boolean;
+  payments_saved: number;
+}
+
 export interface IMercadoPagoSyncGateway {
   sync(): Promise<void>;
   getSyncStatus(): Promise<MercadoPagoSyncStatus>;
+  reconcileUser(userId: string): Promise<MercadoPagoReconcileUserResult>;
 }

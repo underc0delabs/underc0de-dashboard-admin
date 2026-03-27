@@ -9,6 +9,7 @@ import { IEditAppUserAction } from "../../core/actions/editAppUserAction";
 import { ICreateAppUserAction } from "../../core/actions/createAppUserAction";
 import { IDeleteAppUserAction } from "../../core/actions/deleteAppUserAction";
 import { ISyncMercadoPagoAction } from "../../core/actions/syncMercadoPagoAction";
+import { IReconcileUserMercadoPagoAction } from "../../core/actions/reconcileUserMercadoPagoAction";
 
 export const appUsersPresenterProvider = (): IPresenterProvider<
   IAppUsersViews,
@@ -34,6 +35,10 @@ export const appUsersPresenterProvider = (): IPresenterProvider<
     "syncMercadoPagoAction"
   ) as ISyncMercadoPagoAction;
 
+  const reconcileUserMercadoPagoAction = useDependency(
+    "reconcileUserMercadoPagoAction"
+  ) as IReconcileUserMercadoPagoAction;
+
   return {
     getPresenter(viewHandlers: IAppUsersViews) {
       const presenter = AppUsersPresenter(
@@ -42,7 +47,8 @@ export const appUsersPresenterProvider = (): IPresenterProvider<
         editAppUserAction,
         createAppUserAction,
         deleteAppUserAction,
-        syncMercadoPagoAction
+        syncMercadoPagoAction,
+        reconcileUserMercadoPagoAction
       );
       return presenter;
     },

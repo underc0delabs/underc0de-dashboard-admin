@@ -8,5 +8,6 @@ export interface IAppUsersPresenter {
   deleteAppUser(id: string): void;
   syncMercadoPago(): void;
   getMercadoPagoSyncStatus(): Promise<MercadoPagoSyncStatus>;
+  reconcileMercadoPagoUser(userId: string): void;
 }
 

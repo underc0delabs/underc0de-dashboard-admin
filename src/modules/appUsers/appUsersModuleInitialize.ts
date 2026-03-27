@@ -10,6 +10,7 @@ import { HttpDeleteAppUserGateway } from "./infrastructure/gateways/HttpDeleteAp
 import { DeleteAppUserAction } from "./core/actions/deleteAppUserAction";
 import { HttpMercadoPagoSyncGateway } from "./infrastructure/gateways/HttpMercadoPagoSyncGateway";
 import { SyncMercadoPagoAction } from "./core/actions/syncMercadoPagoAction";
+import { ReconcileUserMercadoPagoAction } from "./core/actions/reconcileUserMercadoPagoAction";
 
 export const appUsersModuleInitialize = (
   dependencyManager: DependencyManager
@@ -43,5 +44,13 @@ export const appUsersModuleInitialize = (
   );
   const syncMercadoPagoAction = SyncMercadoPagoAction(mercadoPagoSyncGateway);
   dependencyManager.register("syncMercadoPagoAction", syncMercadoPagoAction);
+
+  const reconcileUserMercadoPagoAction = ReconcileUserMercadoPagoAction(
+    mercadoPagoSyncGateway
+  );
+  dependencyManager.register(
+    "reconcileUserMercadoPagoAction",
+    reconcileUserMercadoPagoAction
+  );
 };
 

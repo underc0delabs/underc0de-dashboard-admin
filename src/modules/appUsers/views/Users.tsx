@@ -1,5 +1,13 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Modal, TextInput, Select, Stack, Button, Group } from "@mantine/core";
+import {
+  Modal,
+  TextInput,
+  Select,
+  Stack,
+  Button,
+  Group,
+  Tooltip,
+} from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
@@ -83,6 +91,7 @@ export default function Users() {
   const [selectedUser, setSelectedUser] = useState<IAppUser | null>(null);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const [syncLoading, setSyncLoading] = useState<boolean>(false);
+  const [reconcileUserId, setReconcileUserId] = useState<string | null>(null);
   const presenterProvider = appUsersPresenterProvider();
   const [presenter, setPresenter] = useState<IAppUsersPresenter>(
     {} as IAppUsersPresenter
@@ -112,6 +121,8 @@ export default function Users() {
     deleteUserError: () => {},
     syncMercadoPagoSuccess: () => {},
     syncMercadoPagoError: () => {},
+    reconcileMercadoPagoUserSuccess: () => {},
+    reconcileMercadoPagoUserError: () => {},
   });
 
   viewHandlersRef.current = {
@@ -292,6 +303,23 @@ export default function Users() {
         color: "red",
       });
     },
+    reconcileMercadoPagoUserSuccess: (summary: string) => {
+      setReconcileUserId(null);
+      notifications.show({
+        title: "Usuario reconciliado con MercadoPago",
+        message: summary,
+        color: "green",
+      });
+      presenterRef.current?.getAppUsers?.();
+    },
+    reconcileMercadoPagoUserError: (error: string) => {
+      setReconcileUserId(null);
+      notifications.show({
+        title: "Error al reconciliar usuario",
+        message: error,
+        color: "red",
+      });
+    },
   };
 
   const viewHandlers = useMemo(
@@ -315,6 +343,10 @@ export default function Users() {
         viewHandlersRef.current.syncMercadoPagoSuccess(),
       syncMercadoPagoError: (e: string) =>
         viewHandlersRef.current.syncMercadoPagoError(e),
+      reconcileMercadoPagoUserSuccess: (s: string) =>
+        viewHandlersRef.current.reconcileMercadoPagoUserSuccess(s),
+      reconcileMercadoPagoUserError: (e: string) =>
+        viewHandlersRef.current.reconcileMercadoPagoUserError(e),
     }),
     []
   );
@@ -431,6 +463,12 @@ export default function Users() {
     }
   };
 
+  const handleReconcileMercadoPagoUser = (user: IAppUser) => {
+    if (!user.id || !isLoaded || reconcileUserId) return;
+    setReconcileUserId(user.id);
+    presenter.reconcileMercadoPagoUser(user.id);
+  };
+
   const handleExportToExcel = () => {
     const proUsers = users.filter((user) => user.subscription === "active");
 
@@ -532,6 +570,9 @@ export default function Users() {
 
   const canEdit = hasPermission("admin");
   const canDelete = hasPermission("admin");
+  /** Misma audiencia que puede usar JWT de panel (admin y editor son isAdmin en API). */
+  const canReconcileMercadoPagoUser =
+    hasPermission("admin") || hasPermission("editor");
 
   return (
     <>
@@ -554,22 +595,24 @@ export default function Users() {
 
       <Group justify="space-between" mb="md">
         <Group gap="md">
-          <Button
-            leftSection={<IconRefresh size={18} />}
-            onClick={handleSyncMercadoPago}
-            loading={syncLoading}
-            variant="light"
-            color="blue"
-            styles={{
-              root: {
-                backgroundColor: "var(--mantine-color-dark-7)",
-                color: "var(--mantine-color-blue-6)",
-                borderColor: "var(--mantine-color-dark-5)",
-              },
-            }}
-          >
-            Sincronizar MercadoPago
-          </Button>
+          <Tooltip label="Sincroniza todos los usuarios; el proceso corre en segundo plano en el servidor.">
+            <Button
+              leftSection={<IconRefresh size={18} />}
+              onClick={handleSyncMercadoPago}
+              loading={syncLoading}
+              variant="light"
+              color="blue"
+              styles={{
+                root: {
+                  backgroundColor: "var(--mantine-color-dark-7)",
+                  color: "var(--mantine-color-blue-6)",
+                  borderColor: "var(--mantine-color-dark-5)",
+                },
+              }}
+            >
+              Sincronizar todo (MercadoPago)
+            </Button>
+          </Tooltip>
           <Button
             leftSection={<IconFileDownload size={18} />}
             onClick={handleExportToExcel}
@@ -617,6 +660,12 @@ export default function Users() {
         totalPages={totalPages}
         onPageChange={handlePageChange}
         emptyMessage="No se encontraron usuarios"
+        onMercadoPagoReconcile={
+          canReconcileMercadoPagoUser
+            ? handleReconcileMercadoPagoUser
+            : undefined
+        }
+        mercadoPagoReconcileLoadingId={reconcileUserId}
       />
 
       <Modal

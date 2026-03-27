@@ -114,9 +114,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const hasPermission = useCallback(
     (requiredRole: UserRole): boolean => {
-      if (!user) return false;
-      if (user.role === "admin") return true;
-      return user.role === requiredRole;
+      if (!user?.role) return false;
+      /** API admin login devuelve rol como "Admin" | "Editor" (ver LoginUserAction). */
+      const role = user.role.toLowerCase() as UserRole;
+      if (role === "admin") return true;
+      return role === requiredRole;
     },
     [user]
   );

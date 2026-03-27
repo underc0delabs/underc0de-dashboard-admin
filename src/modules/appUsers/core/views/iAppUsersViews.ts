@@ -11,5 +11,7 @@ export interface IAppUsersViews {
   deleteUserError: (error: string) => void;
   syncMercadoPagoSuccess: () => void;
   syncMercadoPagoError: (error: string) => void;
+  reconcileMercadoPagoUserSuccess: (summary: string) => void;
+  reconcileMercadoPagoUserError: (error: string) => void;
 }
 

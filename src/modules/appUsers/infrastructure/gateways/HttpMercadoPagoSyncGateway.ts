@@ -1,6 +1,7 @@
 import { IHttpClient } from "@/modules/httpClient/interfaces";
 import {
   IMercadoPagoSyncGateway,
+  MercadoPagoReconcileUserResult,
   MercadoPagoSyncStatus,
 } from "../../core/gateways/iMercadoPagoSyncGateway";
 
@@ -34,6 +35,21 @@ export const HttpMercadoPagoSyncGateway = (
         };
       }
       return { status: "idle" };
+    },
+    reconcileUser: async (
+      userId: string
+    ): Promise<MercadoPagoReconcileUserResult> => {
+      const response = await httpClient.post(
+        `/admin/users/${userId}/mercadopago-reconcile`,
+        {}
+      );
+      if (!response.status) {
+        const msg =
+          (response as { error?: { message?: string } }).error?.message ??
+          "Error al reconciliar usuario con MercadoPago";
+        return Promise.reject(new Error(msg));
+      }
+      return response.data as MercadoPagoReconcileUserResult;
     },
   };
 };

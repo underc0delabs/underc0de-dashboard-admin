@@ -9,7 +9,7 @@ import {
   Pagination,
   Center,
 } from "@mantine/core";
-import { IconEdit, IconTrash, IconEye } from "@tabler/icons-react";
+import { IconEdit, IconTrash, IconEye, IconReceipt2 } from "@tabler/icons-react";
 import { ReactNode } from "react";
 import classes from "./DataTable.module.css";
 import { useAuth } from "@/context/AuthContext";
@@ -33,6 +33,8 @@ interface DataTableProps<T> {
   canEdit?: boolean;
   canDelete?: boolean;
   isFromUserAdmin?: boolean;
+  onMercadoPagoReconcile?: (item: T) => void;
+  mercadoPagoReconcileLoadingId?: string | null;
 }
 
 export function DataTable<T extends { id?: string }>({
@@ -47,7 +49,9 @@ export function DataTable<T extends { id?: string }>({
   emptyMessage = "No hay datos disponibles",
   canEdit = true,
   canDelete = true,
-  isFromUserAdmin = false
+  isFromUserAdmin = false,
+  onMercadoPagoReconcile,
+  mercadoPagoReconcileLoadingId = null,
 }: DataTableProps<T>) {
   const user = useAuth();
   const userId = user.user?.id;
@@ -130,6 +134,18 @@ export function DataTable<T extends { id?: string }>({
                           onClick={() => onDelete(item)}
                         >
                           <IconTrash size={18} />
+                        </ActionIcon>
+                      </Tooltip>
+                    )}
+                    {onMercadoPagoReconcile && item.id && (
+                      <Tooltip label="Reconciliar MercadoPago (solo este usuario)">
+                        <ActionIcon
+                          variant="subtle"
+                          color="cyan"
+                          loading={mercadoPagoReconcileLoadingId === item.id}
+                          onClick={() => onMercadoPagoReconcile(item)}
+                        >
+                          <IconReceipt2 size={18} />
                         </ActionIcon>
                       </Tooltip>
                     )}
