@@ -6,6 +6,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import Login from "@/modules/login/views/Login";
 import Dashboard from "@/modules/dashboard/views/Dashboard";
 import Users from "@/modules/appUsers/views/Users";
+import MemberProvisioning from "@/modules/appUsers/views/MemberProvisioning";
 import Commerces from "@/modules/commerces/views/Commerces";
 import { RolesEnum } from "@/constants/rolesEnum";
 import AdminUsers from "@/modules/adminUsers/views/AdminUsers";
@@ -39,6 +40,14 @@ const router = createBrowserRouter([
             <Users />
           </RoleBasedRoute>
         )
+      },
+      {
+        path: routes.userMemberProvision,
+        element: (
+          <RoleBasedRoute allowedRoles={[RolesEnum.ADMIN_ROLE]}>
+            <MemberProvisioning />
+          </RoleBasedRoute>
+        ),
       },
       { 
         path: routes.commerces, 

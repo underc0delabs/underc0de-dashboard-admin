@@ -7,11 +7,18 @@ import {
   Button,
   Group,
   Tooltip,
+  Text,
+  Divider,
+  Collapse,
+  PasswordInput,
+  Code,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { IconRefresh, IconFileDownload } from "@tabler/icons-react";
+import { IconRefresh, IconFileDownload, IconUserPlus } from "@tabler/icons-react";
+import { useNavigate } from "react-router-dom";
+import { routes } from "@/constants/routes";
 import * as XLSX from "xlsx";
 import { PageHeader } from "@/components/common/PageHeader";
 import { DataTable, Column, StatusBadge } from "@/components/common/DataTable";
@@ -28,7 +35,7 @@ const filters: FilterOption[] = [
     key: "search",
     label: "Buscar",
     type: "text",
-    placeholder: "Buscar por nombre, usuario o email...",
+    placeholder: "Buscar por id, id foro, nombre, usuario o email...",
   },
   {
     key: "status",
@@ -53,6 +60,26 @@ const filters: FilterOption[] = [
 ];
 
 const columns: Column<IAppUser>[] = [
+  {
+    key: "id",
+    label: "ID app",
+    render: (user) =>
+      user.id ? (
+        <Code fz="xs">{user.id}</Code>
+      ) : (
+        "—"
+      ),
+  },
+  {
+    key: "forumUserId",
+    label: "ID foro",
+    render: (user) =>
+      user.forumUserId ? (
+        <Code fz="xs">{user.forumUserId}</Code>
+      ) : (
+        "—"
+      ),
+  },
   { key: "fullName", label: "Nombre completo", render: (user) => user.fullName || user.name || "-" },
   { key: "username", label: "Nombre de usuario", render: (user) => user.username || "-" },
   { key: "email", label: "Email" },
@@ -77,6 +104,7 @@ const columns: Column<IAppUser>[] = [
 ];
 
 export default function Users() {
+  const navigate = useNavigate();
   const { hasPermission } = useAuth();
   const [users, setUsers] = useState<IAppUser[]>([]);
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
@@ -88,6 +116,8 @@ export default function Users() {
     deleteModalOpened,
     { open: openDeleteModal, close: closeDeleteModal },
   ] = useDisclosure(false);
+  const [advancedMpOpen, { toggle: toggleAdvancedMp }] = useDisclosure(false);
+  const [advancedSubOpen, { toggle: toggleAdvancedSub }] = useDisclosure(false);
   const [selectedUser, setSelectedUser] = useState<IAppUser | null>(null);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const [syncLoading, setSyncLoading] = useState<boolean>(false);
@@ -366,14 +396,26 @@ export default function Users() {
 
   const form = useForm<Partial<IAppUser>>({
     initialValues: {
+      username: "",
+      lastname: "",
       name: "",
       email: "",
       phone: "",
+      forumUserId: "",
+      forumEmail: "",
+      mercadopago_email: "",
+      mercadopagoCustomerId: "",
+      mercadopagoExternalReference: "",
+      password: "",
       status: true,
       subscription: "none" as SubscriptionStatus,
       subscriptionPlan: "",
     },
     validate: {
+      username: (value) =>
+        !value || !String(value).trim()
+          ? "El nombre de usuario es obligatorio"
+          : null,
       name: (value) => (!value ? "El nombre es requerido" : null),
       email: (value) => {
         if (!value) return "El email es requerido";
@@ -390,10 +432,14 @@ export default function Users() {
         const fullName = (user.fullName || user.name || "").toLowerCase();
         const username = (user.username || "").toLowerCase();
         const email = (user.email || "").toLowerCase();
+        const idStr = (user.id || "").toLowerCase();
+        const forumId = (user.forumUserId || "").toLowerCase();
         if (
           !fullName.includes(search) &&
           !username.includes(search) &&
-          !email.includes(search)
+          !email.includes(search) &&
+          !idStr.includes(search) &&
+          !forumId.includes(search)
         ) {
           return false;
         }
@@ -482,6 +528,8 @@ export default function Users() {
     }
 
     const excelData = proUsers.map((user) => ({
+      "ID app": user.id || "-",
+      "ID foro": user.forumUserId || "-",
       "Nombre completo": user.fullName || user.name,
       "Nombre de usuario": user.username || "-",
       Email: user.email,
@@ -529,12 +577,20 @@ export default function Users() {
   const handleEdit = (user: IAppUser) => {
     setSelectedUser(user);
     form.setValues({
+      username: user.username ?? "",
+      lastname: user.lastname ?? "",
       name: user.name,
       email: user.email,
-      phone: user.phone,
+      phone: user.phone ?? "",
+      forumUserId: user.forumUserId ?? "",
+      forumEmail: user.forumEmail ?? "",
+      mercadopago_email: user.mercadopago_email ?? "",
+      mercadopagoCustomerId: user.mercadopagoCustomerId ?? "",
+      mercadopagoExternalReference: user.mercadopagoExternalReference ?? "",
+      password: "",
       status: user.status,
       subscription: user.subscription,
-      subscriptionPlan: user.subscriptionPlan,
+      subscriptionPlan: user.subscriptionPlan ?? "",
     });
     openModal();
   };
@@ -545,13 +601,37 @@ export default function Users() {
   };
 
   const handleSubmit = (values: Partial<IAppUser>) => {
+    const mercadopago_email = values.mercadopago_email?.trim() || undefined;
+    const forumUserId = values.forumUserId?.trim() || undefined;
+    const forumEmail = values.forumEmail?.trim() || undefined;
+    const mercadopagoCustomerId =
+      values.mercadopagoCustomerId?.trim() || undefined;
+    const mercadopagoExternalReference =
+      values.mercadopagoExternalReference?.trim() || undefined;
+
     if (selectedUser && selectedUser.id) {
-      presenter.updateAppUser(selectedUser.id, values);
+      const { password: _p, createdAt: _c, ...rest } = values;
+      presenter.updateAppUser(selectedUser.id, {
+        ...rest,
+        mercadopago_email,
+        forumUserId,
+        forumEmail,
+        mercadopagoCustomerId,
+        mercadopagoExternalReference,
+      });
     } else {
       const newUser: Partial<IAppUser> = {
+        username: values.username!.trim(),
+        lastname: values.lastname?.trim(),
         name: values.name!,
         email: values.email!,
         phone: values.phone,
+        forumUserId,
+        forumEmail,
+        mercadopago_email,
+        mercadopagoCustomerId,
+        mercadopagoExternalReference,
+        password: values.password?.trim() || undefined,
         status: values.status ?? true,
         subscription: values.subscription || "none",
         subscriptionPlan: values.subscriptionPlan,
@@ -595,6 +675,23 @@ export default function Users() {
 
       <Group justify="space-between" mb="md">
         <Group gap="md">
+          {hasPermission("admin") && (
+            <Button
+              leftSection={<IconUserPlus size={18} />}
+              onClick={() => navigate(`/${routes.userMemberProvision}`)}
+              variant="light"
+              color="grape"
+              styles={{
+                root: {
+                  backgroundColor: "var(--mantine-color-dark-7)",
+                  color: "var(--mantine-color-grape-4)",
+                  borderColor: "var(--mantine-color-dark-5)",
+                },
+              }}
+            >
+              Alta miembro (foro + MP)
+            </Button>
+          )}
           <Tooltip label="Sincroniza todos los usuarios; el proceso corre en segundo plano en el servidor.">
             <Button
               leftSection={<IconRefresh size={18} />}
@@ -671,41 +768,143 @@ export default function Users() {
       <Modal
         opened={modalOpened}
         onClose={closeModal}
-        title={selectedUser ? "Editar Usuario" : "Nuevo Usuario"}
+        title={selectedUser ? "Editar usuario de la app" : "Nuevo usuario de la app"}
         centered
+        size="lg"
         styles={{
           title: { fontWeight: 600, color: "white" },
         }}
       >
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <Stack gap="md">
+            <Text size="sm" c="dimmed">
+              Completá la cuenta en la app. Podés usar el mismo u otro email que en el foro y en
+              Mercado Pago.
+            </Text>
+            <Divider label="Cuenta en la app" labelPosition="left" />
+            <Group grow>
+              <TextInput
+                label="Usuario"
+                placeholder="Ej. juan_perez"
+                required
+                {...form.getInputProps("username")}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { color: "var(--mantine-color-dark-1)" },
+                }}
+              />
+              <TextInput
+                label="Teléfono"
+                placeholder="+54..."
+                {...form.getInputProps("phone")}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { color: "var(--mantine-color-dark-1)" },
+                }}
+              />
+            </Group>
+            <Group grow>
+              <TextInput
+                label="Nombre"
+                required
+                {...form.getInputProps("name")}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { color: "var(--mantine-color-dark-1)" },
+                }}
+              />
+              <TextInput
+                label="Apellido"
+                {...form.getInputProps("lastname")}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { color: "var(--mantine-color-dark-1)" },
+                }}
+              />
+            </Group>
             <TextInput
-              label="Nombre"
-              placeholder="Nombre completo"
-              {...form.getInputProps("name")}
-              styles={{
-                label: { color: "var(--mantine-color-dark-1)" },
-                input: { color: "var(--mantine-color-dark-1)" },
-              }}
-            />
-            <TextInput
-              label="Email"
+              label="Email (app)"
               placeholder="email@ejemplo.com"
+              required
               {...form.getInputProps("email")}
               styles={{
                 label: { color: "var(--mantine-color-dark-1)" },
                 input: { color: "var(--mantine-color-dark-1)" },
               }}
             />
+            {!selectedUser && (
+              <PasswordInput
+                label="Contraseña (opcional)"
+                description="Si la dejás vacía, el usuario recibe una clave aleatoria y debe usar recuperación."
+                {...form.getInputProps("password")}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { color: "var(--mantine-color-dark-1)" },
+                }}
+              />
+            )}
+            <Divider label="Foro" labelPosition="left" />
+            <Text size="xs" c="dimmed">
+              ID del miembro en el foro (ej. id_member). Opcional: email registrado en el foro.
+            </Text>
+            <Group grow>
+              <TextInput
+                label="ID usuario en el foro"
+                placeholder="Solo si ya existe en el foro"
+                {...form.getInputProps("forumUserId")}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { color: "var(--mantine-color-dark-1)" },
+                }}
+              />
+              <TextInput
+                label="Email en el foro (opcional)"
+                {...form.getInputProps("forumEmail")}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { color: "var(--mantine-color-dark-1)" },
+                }}
+              />
+            </Group>
+            <Divider label="Mercado Pago" labelPosition="left" />
             <TextInput
-              label="Teléfono"
-              placeholder="+54 11 1234-5678"
-              {...form.getInputProps("phone")}
+              label="Email de cobro Mercado Pago"
+              placeholder="Puede diferir del email de la app"
+              {...form.getInputProps("mercadopago_email")}
               styles={{
                 label: { color: "var(--mantine-color-dark-1)" },
                 input: { color: "var(--mantine-color-dark-1)" },
               }}
             />
+            <Button variant="subtle" size="xs" onClick={toggleAdvancedMp}>
+              {advancedMpOpen ? "Ocultar" : "Mostrar"} datos técnicos MP (opcional)
+            </Button>
+            <Collapse in={advancedMpOpen}>
+              <Stack gap="sm">
+                <Text size="xs" c="dimmed">
+                  Solo si los tenés del panel de Mercado Pago o soporte.
+                </Text>
+                <Group grow>
+                  <TextInput
+                    label="Customer ID"
+                    {...form.getInputProps("mercadopagoCustomerId")}
+                    styles={{
+                      label: { color: "var(--mantine-color-dark-1)" },
+                      input: { color: "var(--mantine-color-dark-1)" },
+                    }}
+                  />
+                  <TextInput
+                    label="External reference"
+                    {...form.getInputProps("mercadopagoExternalReference")}
+                    styles={{
+                      label: { color: "var(--mantine-color-dark-1)" },
+                      input: { color: "var(--mantine-color-dark-1)" },
+                    }}
+                  />
+                </Group>
+              </Stack>
+            </Collapse>
+            <Divider label="Estado y suscripción" labelPosition="left" />
             <Select
               label="Estado"
               data={[
@@ -736,15 +935,31 @@ export default function Users() {
                 input: { color: "var(--mantine-color-dark-1)" },
               }}
             />
-            <TextInput
-              label="Plan"
-              placeholder="Basic, Premium, Enterprise..."
-              {...form.getInputProps("subscriptionPlan")}
-              styles={{
-                label: { color: "var(--mantine-color-dark-1)" },
-                input: { color: "var(--mantine-color-dark-1)" },
-              }}
-            />
+            <Button variant="subtle" size="xs" onClick={toggleAdvancedSub}>
+              {advancedSubOpen ? "Ocultar" : "Mostrar"} referencia interna de plan
+            </Button>
+            <Collapse in={advancedSubOpen}>
+              <TextInput
+                label="Referencia / plan (técnico)"
+                description="Solo uso avanzado; en general no hace falta tocar esto."
+                {...form.getInputProps("subscriptionPlan")}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { color: "var(--mantine-color-dark-1)" },
+                }}
+              />
+            </Collapse>
+            {selectedUser?.id && (
+              <Text size="xs" c="dimmed">
+                ID app: <Code>{selectedUser.id}</Code>
+                {selectedUser.forumUserId ? (
+                  <>
+                    {" · "}
+                    ID foro: <Code>{selectedUser.forumUserId}</Code>
+                  </>
+                ) : null}
+              </Text>
+            )}
             <Group justify="flex-end" mt="md">
               <Button variant="subtle" color="gray" onClick={closeModal}>
                 Cancelar

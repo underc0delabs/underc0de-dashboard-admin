@@ -1,51 +1,16 @@
 import { IHttpClient } from "@/modules/httpClient/interfaces";
 import { IGetAppUsersGateway } from "../../core/gateways/iGetAppUsersGateway";
 import { IAppUser } from "../../core/entities/iAppUser";
-import { format } from "date-fns";
+import { mapApiUserToAppUser } from "../mapApiUserToAppUser";
 
 export const HttpGetAppUserGateway = (
   httpClient: IHttpClient
 ): IGetAppUsersGateway => {
-  const toAppUsers = (response: any): IAppUser[] => {
-    return response.map((user: any) => {
-      let subscription: 'active' | 'trial' | 'expired' | 'cancelled' | 'none' = 'none';
-      if (user.subscription) {
-        const subscriptionStatus = user.subscription.status?.toLowerCase();
-        if (subscriptionStatus === 'active') {
-          subscription = 'active';
-        } else if (subscriptionStatus === 'expired') {
-          subscription = 'expired';
-        } else if (subscriptionStatus === 'cancelled') {
-          subscription = 'cancelled';
-        } else if (subscriptionStatus === 'trial') {
-          subscription = 'trial';
-        }
-      }
-
-      const activePlan = user.subscriptionPlans?.find(
-        (plan: any) => plan.status === 'ACTIVE'
-      );
-      const subscriptionPlan = activePlan?.mpPreapprovalId || undefined;
-      const subscriptionEndDate = user.subscription?.nextPaymentDate
-        ? format(new Date(user.subscription.nextPaymentDate), "dd/MM/yyyy HH:mm")
-        : undefined;
-
-      return {
-        id: String(user.id),
-        email: user.email,
-        mercadopago_email: user.mercadopago_email,
-        name: user.name,
-        fullName: user.fullName ? user.fullName : [user.name, user.lastname].filter(Boolean).join(" ").trim() || user.name,
-        username: user.username,
-        phone: user.phone,
-        subscription,
-        subscriptionPlan,
-        subscriptionEndDate,
-        status: user.status ?? true,
-        createdAt: format(new Date(user.createdAt), "dd/MM/yyyy HH:mm"),
-        updatedAt: user.updatedAt ? format(new Date(user.updatedAt), "dd/MM/yyyy HH:mm") : undefined,
-      };
-    });
+  const toAppUsers = (response: unknown): IAppUser[] => {
+    if (!Array.isArray(response)) return [];
+    return response.map((user) =>
+      mapApiUserToAppUser(user as Record<string, unknown>)
+    );
   };
   return {
     getAppUsers: async () => {

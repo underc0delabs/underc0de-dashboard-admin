@@ -11,6 +11,7 @@ import {
 import {
   IconDashboard,
   IconUsers,
+  IconUserPlus,
   IconBuildingStore,
   IconUserShield,
   IconBell,
@@ -43,6 +44,12 @@ const navItems = [
     label: "Usuarios",
     path: routes.users,
     roles: ["admin", "editor"],
+  },
+  {
+    icon: IconUserPlus,
+    label: "Alta miembro (app/foro/MP)",
+    path: routes.userMemberProvision,
+    roles: ["admin"],
   },
   {
     icon: IconBuildingStore,
