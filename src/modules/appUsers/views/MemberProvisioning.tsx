@@ -482,6 +482,29 @@ export default function MemberProvisioning() {
                 </Text>
               </Paper>
             )}
+            {Array.isArray((bundle as { subscriptionPlans?: unknown[] } | null)?.subscriptionPlans) &&
+              (bundle as { subscriptionPlans: { id?: number; status?: string; mpPreapprovalId?: string; createdAt?: string }[] }).subscriptionPlans.length > 0 && (
+                <Paper p="md" withBorder>
+                  <Text fw={600} mb="xs">
+                    Historial de suscripciones (Mercado Pago)
+                  </Text>
+                  <Text size="xs" c="dimmed" mb="sm">
+                    Más reciente primero. Una cancelada no se reutiliza: una nueva alta crea otra fila con otro preapproval.
+                  </Text>
+                  {(bundle as { subscriptionPlans: { id?: number; status?: string; mpPreapprovalId?: string; createdAt?: string }[] }).subscriptionPlans.map((s) => (
+                    <Text size="sm" key={String(s.id ?? s.mpPreapprovalId)}>
+                      <Code>#{s.id}</Code> · estado <Code>{String(s.status ?? "—")}</Code> · preapproval{" "}
+                      <Code>{String(s.mpPreapprovalId ?? "—")}</Code>
+                      {s.createdAt ? (
+                        <>
+                          {" "}
+                          · {String(s.createdAt)}
+                        </>
+                      ) : null}
+                    </Text>
+                  ))}
+                </Paper>
+              )}
             <Button onClick={() => navigate(`/${routes.users}`)}>
               Finalizar
             </Button>

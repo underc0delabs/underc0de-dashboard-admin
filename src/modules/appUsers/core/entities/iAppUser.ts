@@ -1,4 +1,11 @@
-export type SubscriptionStatus = 'active' | 'trial' | 'expired' | 'cancelled' | 'none';
+export type SubscriptionStatus =
+  | 'active'
+  | 'trial'
+  | 'expired'
+  | 'cancelled'
+  | 'pending'
+  | 'payment_failed'
+  | 'none';
 
 export interface IAppUser {
   id?: string;

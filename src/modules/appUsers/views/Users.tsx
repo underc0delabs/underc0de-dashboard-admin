@@ -35,7 +35,8 @@ const filters: FilterOption[] = [
     key: "search",
     label: "Buscar",
     type: "text",
-    placeholder: "Buscar por id, id foro, nombre, usuario o email...",
+    placeholder:
+      "Buscar por id, id foro, nombre, usuario, email app o email Mercado Pago...",
   },
   {
     key: "status",
@@ -52,6 +53,9 @@ const filters: FilterOption[] = [
     type: "select",
     options: [
       { value: "active", label: "Activa" },
+      { value: "pending", label: "Pendiente (checkout MP)" },
+      { value: "payment_failed", label: "Pago rechazado / fallido" },
+      { value: "trial", label: "Prueba" },
       { value: "expired", label: "Expirada" },
       { value: "cancelled", label: "Cancelada" },
       { value: "none", label: "Sin suscripción" },
@@ -432,12 +436,14 @@ export default function Users() {
         const fullName = (user.fullName || user.name || "").toLowerCase();
         const username = (user.username || "").toLowerCase();
         const email = (user.email || "").toLowerCase();
+        const mercadopagoEmail = (user.mercadopago_email || "").toLowerCase();
         const idStr = (user.id || "").toLowerCase();
         const forumId = (user.forumUserId || "").toLowerCase();
         if (
           !fullName.includes(search) &&
           !username.includes(search) &&
           !email.includes(search) &&
+          !mercadopagoEmail.includes(search) &&
           !idStr.includes(search) &&
           !forumId.includes(search)
         ) {
@@ -924,6 +930,8 @@ export default function Users() {
               label="Suscripción"
               data={[
                 { value: "active", label: "Activa" },
+                { value: "pending", label: "Pendiente (checkout MP)" },
+                { value: "payment_failed", label: "Pago rechazado / fallido" },
                 { value: "trial", label: "Prueba" },
                 { value: "expired", label: "Expirada" },
                 { value: "cancelled", label: "Cancelada" },
