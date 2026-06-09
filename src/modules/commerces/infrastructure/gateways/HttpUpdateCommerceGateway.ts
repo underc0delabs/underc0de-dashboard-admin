@@ -10,7 +10,8 @@ export const HttpUpdateCommerceGateway = (
     return {
       id: response.id,
       name: response.name,
-      category: response.category,
+      category: response.category ?? null,
+      categoryName: response.categoryName ?? null,
       address: response.address,
       phone: response.phone,
       email: response.email,
@@ -30,7 +31,12 @@ export const HttpUpdateCommerceGateway = (
         const formData = new FormData();
         
         if (commerce.name) formData.append('name', commerce.name);
-        if (commerce.category) formData.append('category', commerce.category);
+        formData.append(
+          'category',
+          typeof commerce.category === 'string' && commerce.category.trim().length > 0
+            ? commerce.category.trim()
+            : '',
+        );
         if (commerce.address) formData.append('address', commerce.address);
         if (commerce.phone) formData.append('phone', commerce.phone || '');
         if (commerce.email) formData.append('email', commerce.email || '');

@@ -13,6 +13,7 @@ import {
   IconUsers,
   IconUserPlus,
   IconBuildingStore,
+  IconCategory,
   IconUserShield,
   IconBell,
   IconLogout,
@@ -55,6 +56,12 @@ const navItems = [
     icon: IconBuildingStore,
     label: "Comercios",
     path: routes.commerces,
+    roles: ["admin", "editor"],
+  },
+  {
+    icon: IconCategory,
+    label: "Categorías",
+    path: routes.categories,
     roles: ["admin", "editor"],
   },
   {

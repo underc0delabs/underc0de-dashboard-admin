@@ -11,6 +11,7 @@ export const HttpGetCommerceGateway = (
       id: commerce.id,
       name: commerce.name,
       category: commerce.category,
+      categoryName: commerce.categoryName ?? null,
       address: commerce.address,
       phone: commerce.phone,
       email: commerce.email,

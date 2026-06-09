@@ -10,5 +10,6 @@ export {adminUsersModuleInitialize} from './modules/adminUsers/adminUsersModuleI
 export {appUsersModuleInitialize} from './modules/appUsers/appUsersModuleInitialize';
 export {environmentsModuleInitialize} from './modules/environments/environmentsModuleInitialize';
 export {merchantsModuleInitialize} from './modules/commerces/merchantsModuleInitialize';
+export {categoriesModuleInitialize} from './modules/categories/categoriesModuleInitialize';
 export {notificationsModuleInitialize} from './modules/notifications/notificationsModuleInitialize';
 export {profileModuleInitialize} from './modules/profile/profileModuleInitialize';

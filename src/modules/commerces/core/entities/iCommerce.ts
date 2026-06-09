@@ -1,7 +1,8 @@
 export interface ICommerce {
   id?: string;
   name: string;
-  category?: string;
+  category?: string | null;
+  categoryName?: string;
   address: string;
   phone?: string;
   email?: string;

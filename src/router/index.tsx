@@ -8,6 +8,7 @@ import Dashboard from "@/modules/dashboard/views/Dashboard";
 import Users from "@/modules/appUsers/views/Users";
 import MemberProvisioning from "@/modules/appUsers/views/MemberProvisioning";
 import Commerces from "@/modules/commerces/views/Commerces";
+import Categories from "@/modules/categories/views/Categories";
 import { RolesEnum } from "@/constants/rolesEnum";
 import AdminUsers from "@/modules/adminUsers/views/AdminUsers";
 import Notifications from "@/modules/notifications/views/Notifications";
@@ -56,6 +57,14 @@ const router = createBrowserRouter([
             <Commerces />
           </RoleBasedRoute>
         )
+      },
+      {
+        path: routes.categories,
+        element: (
+          <RoleBasedRoute allowedRoles={[RolesEnum.ADMIN_ROLE, RolesEnum.USER_EDITOR]}>
+            <Categories />
+          </RoleBasedRoute>
+        ),
       },
       { path: routes.adminUsers, element: (
         <RoleBasedRoute allowedRoles={[RolesEnum.ADMIN_ROLE]}>

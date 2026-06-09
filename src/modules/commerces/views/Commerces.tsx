@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   Modal,
   TextInput,
@@ -25,6 +25,9 @@ import { commercePresenterProvider } from "../infrastructure/presentation/presen
 import { ICommercePresenter } from "../core/presentation/iCommercePresenter";
 import { ICommerceViews } from "../core/views/iCommerceViews";
 import { ICommerce } from "../core/entities/iCommerce";
+import { useDependency } from "@/hooks/useDependency";
+import { IGetCategoriesAction } from "@/modules/categories/core/actions/getCategoriesAction";
+import { ICategory } from "@/modules/categories/core/entities/iCategory";
 
 const filters: FilterOption[] = [
   {
@@ -42,10 +45,21 @@ const filters: FilterOption[] = [
       { value: "false", label: "Inactivo" },
     ],
   },
+  {
+    key: "category",
+    label: "Categoría",
+    type: "select",
+    options: [],
+  },
 ];
 
 const columns: Column<ICommerce>[] = [
   { key: "name", label: "Nombre" },
+  {
+    key: "categoryName",
+    label: "Categoría",
+    render: (commerce) => commerce.categoryName || "-",
+  },
   { key: "detail", label: "Detalle", render: (commerce) => commerce.detail || "-" },
   { key: "url", label: "URL", render: (commerce) => commerce.url || "-" },
   {
@@ -84,6 +98,11 @@ export default function Commerces() {
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [logoRemoved, setLogoRemoved] = useState<boolean>(false);
+  const [categories, setCategories] = useState<ICategory[]>([]);
+  const getCategoriesAction = useDependency<IGetCategoriesAction>(
+    "getCategoriesAction",
+  );
+  const deletingCommerceIdRef = useRef<string | undefined>(undefined);
 
   const viewHandlers: ICommerceViews = {
     getCommercesSuccess: (commerces) => {
@@ -108,8 +127,15 @@ export default function Commerces() {
       });
     },
     updateCommerceSuccess: (commerce) => {
+      const normalizedCommerce: ICommerce = {
+        ...commerce,
+        category: commerce.category ?? null,
+        categoryName: commerce.categoryName ?? null,
+      };
       setCommerces((prev) =>
-        prev.map((c) => (c.id === commerce.id ? commerce : c))
+        prev.map((c) =>
+          c.id === normalizedCommerce.id ? normalizedCommerce : c,
+        ),
       );
       notifications.show({
         title: "Comercio actualizado",
@@ -126,7 +152,9 @@ export default function Commerces() {
       });
     },
     deleteCommerceSuccess: () => {
-      setCommerces((prev) => prev.filter((c) => c.id !== selectedCommerce?.id));
+      const id = deletingCommerceIdRef.current;
+      setCommerces((prev) => prev.filter((c) => c.id !== id));
+      deletingCommerceIdRef.current = undefined;
       notifications.show({
         title: "Comercio eliminado",
         message: "El comercio ha sido eliminado correctamente.",
@@ -153,6 +181,35 @@ export default function Commerces() {
       presenter.getCommerces();
     }
   }, [isLoaded]);
+
+  useEffect(() => {
+    getCategoriesAction
+      .execute()
+      .then(setCategories)
+      .catch(() => setCategories([]));
+  }, [getCategoriesAction]);
+
+  const categoryOptions = useMemo(
+    () =>
+      categories.map((category) => ({
+        value: category.id ?? "",
+        label: category.name,
+      })),
+    [categories],
+  );
+
+  const filterOptions = useMemo(
+    () =>
+      filters.map((filter) =>
+        filter.key === "category"
+          ? {
+              ...filter,
+              options: categoryOptions,
+            }
+          : filter,
+      ),
+    [categoryOptions],
+  );
 
   const form = useForm<Partial<ICommerce> & { logo?: File | null }>({
     initialValues: {
@@ -197,6 +254,12 @@ export default function Commerces() {
         if (!commerce.name.toLowerCase().includes(search)) return false;
       }
       if (filterValues.status && commerce.status.toString() !== filterValues.status) return false;
+      if (
+        filterValues.category &&
+        (commerce.category ?? "") !== filterValues.category
+      ) {
+        return false;
+      }
       return true;
     });
   }, [commerces, filterValues]);
@@ -223,7 +286,7 @@ export default function Commerces() {
     setLogoRemoved(false);
     form.setValues({
       name: commerce.name,
-      category: commerce.category,
+      category: commerce.category ?? null,
       address: commerce.address,
       phone: commerce.phone,
       email: commerce.email,
@@ -263,12 +326,20 @@ export default function Commerces() {
   };
 
   const handleSubmit = (values: Partial<ICommerce>) => {
+    const normalizedValues: Partial<ICommerce> = {
+      ...values,
+      category:
+        typeof values.category === "string" && values.category.trim().length > 0
+          ? values.category.trim()
+          : null,
+    };
+
     if (selectedCommerce !== null && selectedCommerce.id !== undefined) {
-      presenter.updateCommerce(selectedCommerce.id!, values);
+      presenter.updateCommerce(selectedCommerce.id!, normalizedValues);
     } else {
       const newCommerce: ICommerce = {
-        name: values.name!,
-        category: values.category!,
+        name: normalizedValues.name!,
+        category: normalizedValues.category ?? undefined,
         address: values.address!,
         phone: values.phone,
         email: values.email,
@@ -286,8 +357,9 @@ export default function Commerces() {
   };
 
   const confirmDelete = () => {
-    if (selectedCommerce) {
-      presenter.deleteCommerce(selectedCommerce.id!);
+    if (selectedCommerce?.id) {
+      deletingCommerceIdRef.current = selectedCommerce.id;
+      presenter.deleteCommerce(selectedCommerce.id);
     }
   };
 
@@ -300,7 +372,7 @@ export default function Commerces() {
       />
 
       <FilterBar
-        filters={filters}
+        filters={filterOptions}
         values={filterValues}
         onChange={handleFilterChange}
         onClear={handleClearFilters}
@@ -332,6 +404,21 @@ export default function Commerces() {
                 label="Nombre"
                 placeholder="Nombre del comercio"
                 {...form.getInputProps("name")}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { color: "var(--mantine-color-dark-1)" },
+                }}
+              />
+              <Select
+                label="Categoría"
+                placeholder="Seleccioná una categoría"
+                data={categoryOptions}
+                clearable
+                searchable
+                value={form.values.category || null}
+                onChange={(value) =>
+                  form.setFieldValue("category", value ?? null)
+                }
                 styles={{
                   label: { color: "var(--mantine-color-dark-1)" },
                   input: { color: "var(--mantine-color-dark-1)" },

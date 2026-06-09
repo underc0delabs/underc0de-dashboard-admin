@@ -36,7 +36,7 @@ const filters: FilterOption[] = [
     label: "Buscar",
     type: "text",
     placeholder:
-      "Buscar por id, id foro, nombre, usuario, email app o email Mercado Pago...",
+      "Buscar por id, id foro, nombre, usuario, email, teléfono o email Mercado Pago...",
   },
   {
     key: "status",
@@ -433,17 +433,25 @@ export default function Users() {
     return users.filter((user) => {
       if (filterValues.search) {
         const search = filterValues.search.toLowerCase();
+        const searchDigits = search.replace(/\D/g, "");
         const fullName = (user.fullName || user.name || "").toLowerCase();
         const username = (user.username || "").toLowerCase();
         const email = (user.email || "").toLowerCase();
         const mercadopagoEmail = (user.mercadopago_email || "").toLowerCase();
+        const phone = (user.phone || "").toLowerCase();
+        const phoneDigits = phone.replace(/\D/g, "");
         const idStr = (user.id || "").toLowerCase();
         const forumId = (user.forumUserId || "").toLowerCase();
+        const phoneMatches =
+          phone.includes(search) ||
+          (searchDigits.length > 0 &&
+            phoneDigits.includes(searchDigits));
         if (
           !fullName.includes(search) &&
           !username.includes(search) &&
           !email.includes(search) &&
           !mercadopagoEmail.includes(search) &&
+          !phoneMatches &&
           !idStr.includes(search) &&
           !forumId.includes(search)
         ) {
