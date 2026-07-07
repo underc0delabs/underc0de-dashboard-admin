@@ -182,6 +182,40 @@ export default function Raffles() {
       image: null,
       removeImage: false,
     },
+    validate: {
+      title: value => (!value?.trim() ? "El título es requerido" : null),
+      description: value =>
+        !value?.trim() ? "La descripción es requerida" : null,
+      participationDeadline: value => {
+        if (!value) {
+          return "Ingresá fecha y hora de cierre de participación";
+        }
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+          return "Fecha u hora de participación inválida";
+        }
+        return null;
+      },
+      claimDeadline: (value, values) => {
+        if (!value) {
+          return "Ingresá fecha y hora límite para reclamar el premio";
+        }
+        const claimDate = new Date(value);
+        if (Number.isNaN(claimDate.getTime())) {
+          return "Fecha u hora de reclamo inválida";
+        }
+        if (values.participationDeadline) {
+          const participationDate = new Date(values.participationDeadline);
+          if (
+            !Number.isNaN(participationDate.getTime()) &&
+            claimDate < participationDate
+          ) {
+            return "El reclamo debe ser posterior al cierre de participación";
+          }
+        }
+        return null;
+      },
+    },
   });
 
   const load = useCallback(() => {
@@ -219,6 +253,19 @@ export default function Raffles() {
   };
 
   const submitForm = () => {
+    const validation = form.validate();
+    if (validation.hasErrors) {
+      const firstError = Object.values(validation.errors).find(
+        message => typeof message === "string" && message.trim().length > 0,
+      );
+      notifications.show({
+        title: "Revisá el formulario",
+        message: firstError ?? "Completá los campos requeridos",
+        color: "red",
+      });
+      return;
+    }
+
     const values = form.values;
     if (selected) {
       presenter.updateRaffle(selected.id, values);

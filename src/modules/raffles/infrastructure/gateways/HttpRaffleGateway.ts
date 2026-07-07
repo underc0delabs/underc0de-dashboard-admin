@@ -1,4 +1,5 @@
-import { IHttpClient } from "@/modules/httpClient/interfaces";
+import { HttpResponse, IHttpClient } from "@/modules/httpClient/interfaces";
+import { parseHttpClientError } from "@/utils/parseHttpClientError";
 import type {
   IRaffle,
   IRaffleEvent,
@@ -6,15 +7,25 @@ import type {
   IRaffleParticipant,
 } from "../../core/entities/iRaffle";
 
-const unwrap = (response: {
-  status: boolean;
-  data: unknown;
-  error?: { message?: string };
-}) => {
+const rejectHttpError = (error: unknown): never => {
+  throw new Error(parseHttpClientError(error, "No se pudo completar la operación"));
+};
+
+const unwrap = (response: HttpResponse) => {
   if (!response.status) {
-    throw new Error(response.error?.message ?? "Request failed");
+    throw new Error(parseHttpClientError(response, "Request failed"));
   }
   return response.data as IRaffle | IRaffle[] | IRaffleParticipant[] | IRaffleEvent[];
+};
+
+const request = async <T>(
+  call: () => Promise<HttpResponse>,
+): Promise<T> => {
+  try {
+    return unwrap(await call()) as T;
+  } catch (error) {
+    rejectHttpError(error);
+  }
 };
 
 const appendFormFields = (formData: FormData, input: IRaffleFormInput) => {
@@ -32,59 +43,41 @@ const appendFormFields = (formData: FormData, input: IRaffleFormInput) => {
 };
 
 export const HttpRaffleGateway = (httpClient: IHttpClient) => ({
-  list: async (): Promise<IRaffle[]> => {
-    const response = await httpClient.get("/admin/raffles");
-    return unwrap(response) as IRaffle[];
-  },
+  list: (): Promise<IRaffle[]> =>
+    request(() => httpClient.get("/admin/raffles")),
 
-  getById: async (id: string): Promise<IRaffle> => {
-    const response = await httpClient.get(`/admin/raffles/${id}`);
-    return unwrap(response) as IRaffle;
-  },
+  getById: (id: string): Promise<IRaffle> =>
+    request(() => httpClient.get(`/admin/raffles/${id}`)),
 
-  create: async (input: IRaffleFormInput): Promise<IRaffle> => {
+  create: (input: IRaffleFormInput): Promise<IRaffle> => {
     const formData = new FormData();
     appendFormFields(formData, input);
-    const response = await httpClient.post("/admin/raffles", formData);
-    return unwrap(response) as IRaffle;
+    return request(() => httpClient.post("/admin/raffles", formData));
   },
 
-  update: async (id: string, input: IRaffleFormInput): Promise<IRaffle> => {
+  update: (id: string, input: IRaffleFormInput): Promise<IRaffle> => {
     const formData = new FormData();
     appendFormFields(formData, input);
-    const response = await httpClient.patch(`/admin/raffles/${id}`, formData);
-    return unwrap(response) as IRaffle;
+    return request(() => httpClient.patch(`/admin/raffles/${id}`, formData));
   },
 
-  publish: async (id: string): Promise<IRaffle> => {
-    const response = await httpClient.post(`/admin/raffles/${id}/publish`, {});
-    return unwrap(response) as IRaffle;
-  },
+  publish: (id: string): Promise<IRaffle> =>
+    request(() => httpClient.post(`/admin/raffles/${id}/publish`, {})),
 
-  draw: async (id: string): Promise<IRaffle> => {
-    const response = await httpClient.post(`/admin/raffles/${id}/draw`, {});
-    return unwrap(response) as IRaffle;
-  },
+  draw: (id: string): Promise<IRaffle> =>
+    request(() => httpClient.post(`/admin/raffles/${id}/draw`, {})),
 
-  redraw: async (id: string): Promise<IRaffle> => {
-    const response = await httpClient.post(`/admin/raffles/${id}/redraw`, {});
-    return unwrap(response) as IRaffle;
-  },
+  redraw: (id: string): Promise<IRaffle> =>
+    request(() => httpClient.post(`/admin/raffles/${id}/redraw`, {})),
 
-  claim: async (id: string): Promise<IRaffle> => {
-    const response = await httpClient.post(`/admin/raffles/${id}/claim`, {});
-    return unwrap(response) as IRaffle;
-  },
+  claim: (id: string): Promise<IRaffle> =>
+    request(() => httpClient.post(`/admin/raffles/${id}/claim`, {})),
 
-  listParticipants: async (id: string): Promise<IRaffleParticipant[]> => {
-    const response = await httpClient.get(`/admin/raffles/${id}/participants`);
-    return unwrap(response) as IRaffleParticipant[];
-  },
+  listParticipants: (id: string): Promise<IRaffleParticipant[]> =>
+    request(() => httpClient.get(`/admin/raffles/${id}/participants`)),
 
-  listEvents: async (id: string): Promise<IRaffleEvent[]> => {
-    const response = await httpClient.get(`/admin/raffles/${id}/events`);
-    return unwrap(response) as IRaffleEvent[];
-  },
+  listEvents: (id: string): Promise<IRaffleEvent[]> =>
+    request(() => httpClient.get(`/admin/raffles/${id}/events`)),
 });
 
 export type IRaffleGateway = ReturnType<typeof HttpRaffleGateway>;
