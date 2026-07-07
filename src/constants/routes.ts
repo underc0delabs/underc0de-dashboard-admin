@@ -5,6 +5,7 @@ export const routes = {
   userMemberProvision: "users/member-provisioning",
   commerces: "commerces",
   categories: "categories",
+  raffles: "raffles",
   adminUsers: "admin-users",
   notifications: "notifications",
   environments: "environments",

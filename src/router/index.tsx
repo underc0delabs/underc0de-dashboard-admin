@@ -13,6 +13,7 @@ import { RolesEnum } from "@/constants/rolesEnum";
 import AdminUsers from "@/modules/adminUsers/views/AdminUsers";
 import Notifications from "@/modules/notifications/views/Notifications";
 import Environments from "@/modules/environments/views/Environments";
+import Raffles from "@/modules/raffles/views/Raffles";
 import Profile from "@/modules/profile/views/Profile";
 import { routes } from "@/constants/routes";
 
@@ -78,6 +79,14 @@ const router = createBrowserRouter([
             <Notifications />
           </RoleBasedRoute>
         )
+      },
+      {
+        path: routes.raffles,
+        element: (
+          <RoleBasedRoute allowedRoles={[RolesEnum.ADMIN_ROLE, RolesEnum.USER_EDITOR]}>
+            <Raffles />
+          </RoleBasedRoute>
+        ),
       },
       {
         path: routes.environments,

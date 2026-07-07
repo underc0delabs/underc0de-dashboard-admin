@@ -11,5 +11,6 @@ export {appUsersModuleInitialize} from './modules/appUsers/appUsersModuleInitial
 export {environmentsModuleInitialize} from './modules/environments/environmentsModuleInitialize';
 export {merchantsModuleInitialize} from './modules/commerces/merchantsModuleInitialize';
 export {categoriesModuleInitialize} from './modules/categories/categoriesModuleInitialize';
+export {rafflesModuleInitialize} from './modules/raffles/rafflesModuleInitialize';
 export {notificationsModuleInitialize} from './modules/notifications/notificationsModuleInitialize';
 export {profileModuleInitialize} from './modules/profile/profileModuleInitialize';
