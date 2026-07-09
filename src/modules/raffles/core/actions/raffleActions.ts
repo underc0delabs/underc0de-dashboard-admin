@@ -8,9 +8,12 @@ export const RaffleActions = (gateway: IRaffleGateway) => ({
   updateRaffle: (id: string, input: IRaffleFormInput) =>
     gateway.update(id, input),
   publishRaffle: (id: string) => gateway.publish(id),
+  closeRaffle: (id: string) => gateway.close(id),
   drawRaffle: (id: string) => gateway.draw(id),
   redrawRaffle: (id: string) => gateway.redraw(id),
   claimRaffle: (id: string) => gateway.claim(id),
+  duplicateRaffle: (id: string) => gateway.duplicate(id),
+  deleteRaffle: (id: string) => gateway.delete(id),
   listParticipants: (id: string) => gateway.listParticipants(id),
   listEvents: (id: string) => gateway.listEvents(id),
 });

@@ -51,6 +51,15 @@ export const RafflePresenter = (
       );
   },
 
+  closeRaffle(id: string) {
+    actions
+      .closeRaffle(id)
+      .then(item => views.actionSuccess(item, "Participación cerrada"))
+      .catch(err =>
+        views.actionError(err instanceof Error ? err : new Error(String(err))),
+      );
+  },
+
   drawRaffle(id: string) {
     actions
       .drawRaffle(id)
@@ -78,9 +87,37 @@ export const RafflePresenter = (
       );
   },
 
+  duplicateRaffle(id: string) {
+    actions
+      .duplicateRaffle(id)
+      .then(item =>
+        views.actionSuccess(item, "Sorteo duplicado como borrador"),
+      )
+      .catch(err =>
+        views.actionError(err instanceof Error ? err : new Error(String(err))),
+      );
+  },
+
+  deleteRaffle(id: string) {
+    actions
+      .deleteRaffle(id)
+      .then(result =>
+        views.removeRaffleSuccess(result.id, "Sorteo eliminado del panel"),
+      )
+      .catch(err =>
+        views.actionError(err instanceof Error ? err : new Error(String(err))),
+      );
+  },
+
   loadDetail(id: string) {
-    Promise.all([actions.listParticipants(id), actions.listEvents(id)])
-      .then(([participants, events]) => views.detailSuccess(participants, events))
+    Promise.all([
+      actions.getRaffle(id),
+      actions.listParticipants(id),
+      actions.listEvents(id),
+    ])
+      .then(([item, participants, events]) =>
+        views.detailSuccess(item, participants, events),
+      )
       .catch(err =>
         views.detailError(err instanceof Error ? err : new Error(String(err))),
       );

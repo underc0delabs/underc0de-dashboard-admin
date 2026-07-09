@@ -9,7 +9,13 @@ import {
   Pagination,
   Center,
 } from "@mantine/core";
-import { IconEdit, IconTrash, IconEye, IconReceipt2 } from "@tabler/icons-react";
+import {
+  IconCopy,
+  IconEdit,
+  IconTrash,
+  IconEye,
+  IconReceipt2,
+} from "@tabler/icons-react";
 import { ReactNode } from "react";
 import classes from "./DataTable.module.css";
 import { useAuth } from "@/context/AuthContext";
@@ -25,7 +31,12 @@ interface DataTableProps<T> {
   columns: Column<T>[];
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
+  onDuplicate?: (item: T) => void;
   onView?: (item: T) => void;
+  canEditItem?: (item: T) => boolean;
+  canDeleteItem?: (item: T) => boolean;
+  editDisabledReason?: (item: T) => string | undefined;
+  deleteDisabledReason?: (item: T) => string | undefined;
   page?: number;
   totalPages?: number;
   onPageChange?: (page: number) => void;
@@ -42,7 +53,12 @@ export function DataTable<T extends { id?: string }>({
   columns,
   onEdit,
   onDelete,
+  onDuplicate,
   onView,
+  canEditItem,
+  canDeleteItem,
+  editDisabledReason,
+  deleteDisabledReason,
   page = 1,
   totalPages = 1,
   onPageChange,
@@ -83,7 +99,17 @@ export function DataTable<T extends { id?: string }>({
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {data.map((item) => (
+            {data.map((item) => {
+              const rowCanEdit = canEditItem ? canEditItem(item) : canEdit;
+              const rowCanDelete = canDeleteItem
+                ? canDeleteItem(item)
+                : canDelete;
+              const editReason = editDisabledReason?.(item);
+              const deleteReason = deleteDisabledReason?.(item);
+              const isSelfDeleteBlocked =
+                isFromUserAdmin && item.id === userId;
+
+              return (
               <Table.Tr key={item.id} className={classes.tr}>
                 {columns.map((col) => (
                   <Table.Td
@@ -108,33 +134,56 @@ export function DataTable<T extends { id?: string }>({
                         </ActionIcon>
                       </Tooltip>
                     )}
-                    {onEdit && canEdit && (
-                      <Tooltip label="Editar">
+                    {onEdit && (
+                      <Tooltip
+                        label={
+                          !rowCanEdit && editReason
+                            ? editReason
+                            : "Editar"
+                        }>
+                        <span>
+                          <ActionIcon
+                            variant="subtle"
+                            color="gray"
+                            disabled={!rowCanEdit}
+                            onClick={() => onEdit(item)}
+                          >
+                            <IconEdit size={18} />
+                          </ActionIcon>
+                        </span>
+                      </Tooltip>
+                    )}
+                    {onDuplicate && (
+                      <Tooltip label="Duplicar">
                         <ActionIcon
                           variant="subtle"
-                          color="gray"
-                          onClick={() => onEdit(item)}
+                          color="cyan"
+                          onClick={() => onDuplicate(item)}
                         >
-                          <IconEdit size={18} />
+                          <IconCopy size={18} />
                         </ActionIcon>
                       </Tooltip>
                     )}
-                    {onDelete && canDelete && (
+                    {onDelete && (
                       <Tooltip
                         label={
-                          isFromUserAdmin && item.id === userId
+                          isSelfDeleteBlocked
                             ? "No puedes eliminar tu propio usuario"
-                            : "Eliminar"
+                            : !rowCanDelete && deleteReason
+                              ? deleteReason
+                              : "Eliminar"
                         }
                       >
-                        <ActionIcon
-                          variant="subtle"
-                          color="red"
-                          disabled={isFromUserAdmin && item.id === userId}
-                          onClick={() => onDelete(item)}
-                        >
-                          <IconTrash size={18} />
-                        </ActionIcon>
+                        <span>
+                          <ActionIcon
+                            variant="subtle"
+                            color="red"
+                            disabled={isSelfDeleteBlocked || !rowCanDelete}
+                            onClick={() => onDelete(item)}
+                          >
+                            <IconTrash size={18} />
+                          </ActionIcon>
+                        </span>
                       </Tooltip>
                     )}
                     {onMercadoPagoReconcile && item.id && (
@@ -152,7 +201,8 @@ export function DataTable<T extends { id?: string }>({
                   </Group>
                 </Table.Td>
               </Table.Tr>
-            ))}
+            );
+            })}
           </Table.Tbody>
         </Table>
       </Table.ScrollContainer>

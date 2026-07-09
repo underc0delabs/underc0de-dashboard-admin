@@ -15,6 +15,7 @@ export interface IRaffle {
   claimDeadline: string;
   proOnly: boolean;
   status: RaffleStatus;
+  participationOpen?: boolean;
   participantCount: number;
   winnerDisplayName: string | null;
 }

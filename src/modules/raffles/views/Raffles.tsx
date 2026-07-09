@@ -1,25 +1,19 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Modal,
-  TextInput,
-  Textarea,
-  Stack,
-  Button,
-  Group,
-  Switch,
-  FileInput,
-  Image,
-  Drawer,
-  Text,
   Badge,
-  ScrollArea,
-  Table,
+  Group,
+  Paper,
+  SegmentedControl,
+  Text,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
+import { IconAlertCircle } from "@tabler/icons-react";
 import { PageHeader } from "@/components/common/PageHeader";
-import { DataTable, Column, StatusBadge } from "@/components/common/DataTable";
+import { DataTable, Column } from "@/components/common/DataTable";
+import { FilterBar, FilterOption } from "@/components/common/FilterBar";
+import { resolveFileUrl } from "@/utils/resolveFileUrl";
 import { rafflePresenterProvider } from "../infrastructure/presentation/presenterProvider";
 import type { IRafflePresenter } from "../core/presentation/iRafflePresenter";
 import type {
@@ -29,84 +23,41 @@ import type {
   IRaffleParticipant,
 } from "../core/entities/iRaffle";
 import { useAuth } from "@/context/AuthContext";
+import { isoToArgentinaDatetimeLocal } from "../utils/raffleDateTime";
+import {
+  ConfirmAction,
+  canDeleteRaffle,
+  canEditRaffle,
+  countByFilter,
+  formatDateTime,
+  getDeleteBlockedReason,
+  getNextActionSummary,
+  listFilterOptions,
+  matchesListFilter,
+  needsAdminAction,
+  statusColor,
+  statusLabel,
+  type RaffleListFilter,
+} from "../utils/raffleWorkflow";
+import { RaffleConfirmModal } from "../components/RaffleConfirmModal";
+import { RaffleDetailDrawer } from "../components/RaffleDetailDrawer";
+import { RaffleFormModal } from "../components/RaffleFormModal";
+import { RaffleProcessGuide } from "../components/RaffleProcessGuide";
 
-const statusLabel: Record<string, string> = {
-  draft: "Borrador",
-  published: "Publicado",
-  closed: "Cerrado",
-  drawn: "Sorteado",
-  completed: "Entregado",
-  expired: "Reclamo vencido",
-};
-
-const columns: Column<IRaffle>[] = [
-  { key: "title", label: "Título" },
+const filterBarOptions: FilterOption[] = [
   {
-    key: "status",
-    label: "Estado",
-    render: item => (
-      <StatusBadge status={statusLabel[item.status] ?? item.status} />
-    ),
-  },
-  {
-    key: "participantCount",
-    label: "Participantes",
-    render: item => item.participantCount ?? 0,
-  },
-  {
-    key: "proOnly",
-    label: "PRO",
-    render: item => (item.proOnly ? "Sí" : "No"),
-  },
-  {
-    key: "participationDeadline",
-    label: "Cierre participación",
-    render: item => new Date(item.participationDeadline).toLocaleString(),
+    key: "search",
+    label: "Buscar",
+    type: "text",
+    placeholder: "Buscar por título...",
   },
 ];
 
-function RaffleActions({
-  item,
-  onEdit,
-  onDetail,
-  presenter,
-  isAdmin,
-}: {
-  item: IRaffle;
-  onEdit: (item: IRaffle) => void;
-  onDetail: (item: IRaffle) => void;
-  presenter: IRafflePresenter;
-  isAdmin: boolean;
-}) {
+function RaffleStatusBadge({ item }: { item: IRaffle }) {
   return (
-    <Group gap="xs" wrap="wrap">
-      <Button size="xs" variant="light" onClick={() => onDetail(item)}>
-        Ver
-      </Button>
-      <Button size="xs" variant="light" onClick={() => onEdit(item)}>
-        Editar
-      </Button>
-      {isAdmin && item.status === "draft" ? (
-        <Button size="xs" onClick={() => presenter.publishRaffle(item.id)}>
-          Publicar
-        </Button>
-      ) : null}
-      {isAdmin && item.status === "closed" ? (
-        <Button size="xs" color="violet" onClick={() => presenter.drawRaffle(item.id)}>
-          Sortear
-        </Button>
-      ) : null}
-      {isAdmin && (item.status === "expired" || item.status === "drawn") ? (
-        <Button size="xs" color="orange" onClick={() => presenter.redrawRaffle(item.id)}>
-          Re-sortear
-        </Button>
-      ) : null}
-      {isAdmin && item.status === "drawn" ? (
-        <Button size="xs" color="green" onClick={() => presenter.claimRaffle(item.id)}>
-          Entregado
-        </Button>
-      ) : null}
-    </Group>
+    <Badge color={statusColor[item.status] ?? "gray"} variant="light" size="sm">
+      {statusLabel[item.status] ?? item.status}
+    </Badge>
   );
 }
 
@@ -117,10 +68,17 @@ export default function Raffles() {
   const [selected, setSelected] = useState<IRaffle | null>(null);
   const [participants, setParticipants] = useState<IRaffleParticipant[]>([]);
   const [events, setEvents] = useState<IRaffleEvent[]>([]);
+  const [listFilter, setListFilter] = useState<RaffleListFilter>("all");
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [modalOpened, { open: openModal, close: closeModal }] =
     useDisclosure(false);
   const [detailOpened, { open: openDetail, close: closeDetail }] =
     useDisclosure(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
+  const presenterRef = useRef<IRafflePresenter | null>(null);
 
   const viewHandlers = useMemo(
     () => ({
@@ -138,15 +96,37 @@ export default function Raffles() {
           }
           return [item, ...prev];
         });
+        setSelected(prev => (prev?.id === item.id ? item : prev));
         closeModal();
-        notifications.show({ title: "OK", message: "Sorteo guardado", color: "green" });
+        notifications.show({
+          title: "Sorteo guardado",
+          message: item.status === "draft"
+            ? "Abrí el detalle para publicarlo en la app."
+            : "Los cambios se aplicaron correctamente.",
+          color: "green",
+        });
       },
       saveRaffleError: (error: Error) => {
         notifications.show({ title: "Error", message: error.message, color: "red" });
       },
       actionSuccess: (item: IRaffle, message?: string) => {
-        setRaffles(prev => prev.map(r => (r.id === item.id ? item : r)));
-        setSelected(item);
+        setActionLoading(false);
+        setRaffles(prev => {
+          const idx = prev.findIndex(r => r.id === item.id);
+          if (idx >= 0) {
+            const next = [...prev];
+            next[idx] = item;
+            return next;
+          }
+          return [item, ...prev];
+        });
+        setSelected(prev => {
+          if (prev?.id === item.id) {
+            presenterRef.current?.loadDetail(item.id);
+            return item;
+          }
+          return prev;
+        });
         notifications.show({
           title: "OK",
           message: message ?? "Acción completada",
@@ -154,23 +134,41 @@ export default function Raffles() {
         });
       },
       actionError: (error: Error) => {
+        setActionLoading(false);
         notifications.show({ title: "Error", message: error.message, color: "red" });
       },
+      removeRaffleSuccess: (id: string, message?: string) => {
+        setActionLoading(false);
+        setRaffles(prev => prev.filter(r => r.id !== id));
+        setSelected(null);
+        closeDetail();
+        notifications.show({
+          title: "OK",
+          message: message ?? "Sorteo eliminado",
+          color: "green",
+        });
+      },
       detailSuccess: (
+        item: IRaffle,
         p: IRaffleParticipant[],
         e: IRaffleEvent[],
       ) => {
+        setDetailLoading(false);
+        setSelected(item);
+        setRaffles(prev => prev.map(r => (r.id === item.id ? item : r)));
         setParticipants(p);
         setEvents(e);
       },
       detailError: (error: Error) => {
+        setDetailLoading(false);
         notifications.show({ title: "Error", message: error.message, color: "red" });
       },
     }),
-    [closeModal],
+    [closeModal, closeDetail],
   );
 
   const presenter = rafflePresenterProvider(viewHandlers);
+  presenterRef.current = presenter;
 
   const form = useForm<IRaffleFormInput>({
     initialValues: {
@@ -226,30 +224,165 @@ export default function Raffles() {
     load();
   }, [load]);
 
+  const filteredRaffles = useMemo(() => {
+    const search = filterValues.search?.trim().toLowerCase() ?? "";
+    return raffles.filter(item => {
+      if (!matchesListFilter(item, listFilter)) {
+        return false;
+      }
+      if (!search) {
+        return true;
+      }
+      return item.title.toLowerCase().includes(search);
+    });
+  }, [raffles, listFilter, filterValues.search]);
+
+  const actionRequiredCount = useMemo(
+    () => countByFilter(raffles, "needs_action"),
+    [raffles],
+  );
+
+  const columns: Column<IRaffle>[] = useMemo(
+    () => [
+      { key: "title", label: "Título" },
+      {
+        key: "status",
+        label: "Estado",
+        render: item => <RaffleStatusBadge item={item} />,
+      },
+      {
+        key: "nextAction",
+        label: "Próximo paso",
+        render: item => (
+          <Group gap={6} wrap="nowrap">
+            {needsAdminAction(item) ? (
+              <IconAlertCircle size={14} color="var(--mantine-color-yellow-5)" />
+            ) : null}
+            <Text size="sm">{getNextActionSummary(item)}</Text>
+          </Group>
+        ),
+      },
+      {
+        key: "participantCount",
+        label: "Participantes",
+        render: item => item.participantCount ?? 0,
+      },
+      {
+        key: "proOnly",
+        label: "Alcance",
+        render: item =>
+          item.proOnly ? (
+            <Badge color="orange" variant="light" size="sm">
+              Solo PRO
+            </Badge>
+          ) : (
+            <Text size="sm">Todos</Text>
+          ),
+      },
+      {
+        key: "participationDeadline",
+        label: "Cierre participación",
+        render: item => formatDateTime(item.participationDeadline),
+      },
+    ],
+    [],
+  );
+
   const openCreate = () => {
     setSelected(null);
+    setImagePreview(null);
     form.reset();
     openModal();
   };
 
   const openEdit = (item: IRaffle) => {
+    if (item.status !== "draft" && item.status !== "published") {
+      notifications.show({
+        title: "No editable",
+        message: "Solo podés editar sorteos en borrador o publicados.",
+        color: "yellow",
+      });
+      return;
+    }
     setSelected(item);
+    setImagePreview(resolveFileUrl(item.imageUrl));
     form.setValues({
       title: item.title,
       description: item.description,
-      participationDeadline: item.participationDeadline.slice(0, 16),
-      claimDeadline: item.claimDeadline.slice(0, 16),
+      participationDeadline: isoToArgentinaDatetimeLocal(item.participationDeadline),
+      claimDeadline: isoToArgentinaDatetimeLocal(item.claimDeadline),
       proOnly: item.proOnly,
       image: null,
       removeImage: false,
     });
+    closeDetail();
     openModal();
+  };
+
+  const handleImageChange = (file: File | null) => {
+    form.setFieldValue("image", file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+    setImagePreview(selected ? resolveFileUrl(selected.imageUrl) : null);
   };
 
   const openItemDetail = (item: IRaffle) => {
     setSelected(item);
-    presenter.loadDetail(item.id);
+    setDetailLoading(true);
+    setParticipants([]);
+    setEvents([]);
     openDetail();
+    presenter.loadDetail(item.id);
+  };
+
+  const requestDuplicate = (item: IRaffle) => {
+    setSelected(item);
+    setConfirmAction("duplicate");
+  };
+
+  const requestDelete = (item: IRaffle) => {
+    setSelected(item);
+    setConfirmAction("delete");
+  };
+
+  const runConfirmedAction = () => {
+    if (!selected || !confirmAction) {
+      return;
+    }
+    setActionLoading(true);
+    setConfirmAction(null);
+
+    switch (confirmAction) {
+      case "publish":
+        presenter.publishRaffle(selected.id);
+        break;
+      case "close":
+        presenter.closeRaffle(selected.id);
+        break;
+      case "draw":
+        presenter.drawRaffle(selected.id);
+        break;
+      case "redraw":
+        presenter.redrawRaffle(selected.id);
+        break;
+      case "claim":
+        presenter.claimRaffle(selected.id);
+        break;
+      case "duplicate":
+        presenter.duplicateRaffle(selected.id);
+        break;
+      case "delete":
+        presenter.deleteRaffle(selected.id);
+        break;
+      default:
+        setActionLoading(false);
+    }
   };
 
   const submitForm = () => {
@@ -278,133 +411,95 @@ export default function Raffles() {
     <>
       <PageHeader
         title="Sorteos"
-        description="Gestioná sorteos, participantes y ganadores"
+        description="Creá sorteos, publicalos en la app, cerrá la participación, sorteá y registrá la entrega del premio."
         action={{ label: "Nuevo sorteo", onClick: openCreate }}
       />
 
-      <DataTable
-        data={raffles}
-        columns={[
-          ...columns,
-          {
-            key: "actions",
-            label: "Acciones",
-            render: item => (
-              <RaffleActions
-                item={item}
-                onEdit={openEdit}
-                onDetail={openItemDetail}
-                presenter={presenter}
-                isAdmin={isAdmin}
-              />
-            ),
-          },
-        ]}
-        canEdit={false}
-        canDelete={false}
+      <RaffleProcessGuide />
+
+      {actionRequiredCount > 0 ? (
+        <Paper withBorder p="sm" radius="md" mb="md" bg="yellow.9">
+          <Group gap="xs">
+            <IconAlertCircle size={18} />
+            <Text size="sm">
+              {actionRequiredCount} {actionRequiredCount === 1 ? " sorteo " : " sorteos "} requieren tu acción. Filtrá por
+              &quot;Requieren acción&quot; para verlos.
+            </Text>
+          </Group>
+        </Paper>
+      ) : null}
+
+      <SegmentedControl
+        mb="md"
+        value={listFilter}
+        onChange={value => setListFilter(value as RaffleListFilter)}
+        data={listFilterOptions.map(option => ({
+          value: option.value,
+          label: `${option.label} (${countByFilter(raffles, option.value)})`,
+        }))}
       />
 
-      <Modal
+      <FilterBar
+        filters={filterBarOptions}
+        values={filterValues}
+        onChange={(key, value) =>
+          setFilterValues(prev => ({ ...prev, [key]: value }))
+        }
+        onClear={() => setFilterValues({})}
+      />
+
+      <DataTable
+        data={filteredRaffles}
+        columns={columns}
+        onView={openItemDetail}
+        onEdit={openEdit}
+        onDuplicate={requestDuplicate}
+        onDelete={requestDelete}
+        canEditItem={canEditRaffle}
+        canDeleteItem={canDeleteRaffle}
+        editDisabledReason={item =>
+          canEditRaffle(item)
+            ? undefined
+            : "Solo podés editar sorteos en borrador o publicados."
+        }
+        deleteDisabledReason={item => getDeleteBlockedReason(item) ?? undefined}
+        emptyMessage={
+          listFilter === "all" && !filterValues.search
+            ? "No hay sorteos creados. Empezá con «Nuevo sorteo»."
+            : "No hay sorteos que coincidan con el filtro."
+        }
+      />
+
+      <RaffleFormModal
         opened={modalOpened}
         onClose={closeModal}
-        title={selected ? "Editar sorteo" : "Nuevo sorteo"}
-        size="lg">
-        <Stack>
-          <TextInput label="Título" required {...form.getInputProps("title")} />
-          <Textarea
-            label="Descripción"
-            required
-            minRows={4}
-            {...form.getInputProps("description")}
-          />
-          <TextInput
-            label="Cierre de participación"
-            type="datetime-local"
-            required
-            {...form.getInputProps("participationDeadline")}
-          />
-          <TextInput
-            label="Plazo para reclamar premio"
-            type="datetime-local"
-            required
-            {...form.getInputProps("claimDeadline")}
-          />
-          <Switch
-            label="Solo miembros PRO"
-            {...form.getInputProps("proOnly", { type: "checkbox" })}
-          />
-          {selected?.imageUrl ? (
-            <Image src={selected.imageUrl} h={120} fit="contain" radius="md" />
-          ) : null}
-          <FileInput
-            label="Imagen"
-            accept="image/*"
-            {...form.getInputProps("image")}
-          />
-          <Group justify="flex-end">
-            <Button variant="default" onClick={closeModal}>
-              Cancelar
-            </Button>
-            <Button onClick={submitForm}>Guardar</Button>
-          </Group>
-        </Stack>
-      </Modal>
+        form={form}
+        selected={selected}
+        imagePreview={imagePreview}
+        onImageChange={handleImageChange}
+        onSubmit={submitForm}
+      />
 
-      <Drawer
+      <RaffleDetailDrawer
         opened={detailOpened}
         onClose={closeDetail}
-        title={selected?.title ?? "Detalle"}
-        size="lg"
-        position="right">
-        {selected ? (
-          <Stack gap="md">
-            <Group gap="xs">
-              <Badge>{statusLabel[selected.status]}</Badge>
-              {selected.proOnly ? <Badge color="orange">PRO</Badge> : null}
-              {selected.winnerDisplayName ? (
-                <Text size="sm">Ganador: {selected.winnerDisplayName}</Text>
-              ) : null}
-            </Group>
-            <Text size="sm">{selected.description}</Text>
+        selected={selected}
+        participants={participants}
+        events={events}
+        detailLoading={detailLoading}
+        isAdmin={isAdmin}
+        actionLoading={actionLoading}
+        onEdit={openEdit}
+        onConfirmAction={setConfirmAction}
+      />
 
-            <Text fw={600}>Participantes ({participants.length})</Text>
-            <ScrollArea h={160}>
-              <Table striped highlightOnHover>
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>Usuario</Table.Th>
-                    <Table.Th>Fecha</Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
-                  {participants.map(p => (
-                    <Table.Tr key={p.id}>
-                      <Table.Td>
-                        {p.displayName} (@{p.username})
-                      </Table.Td>
-                      <Table.Td>
-                        {new Date(p.enteredAt).toLocaleString()}
-                      </Table.Td>
-                    </Table.Tr>
-                  ))}
-                </Table.Tbody>
-              </Table>
-            </ScrollArea>
-
-            <Text fw={600}>Historial</Text>
-            <Stack gap="xs">
-              {events.map(e => (
-                <Group key={e.id} justify="space-between" wrap="nowrap">
-                  <Text size="sm">{e.type}</Text>
-                  <Text size="xs" c="dimmed">
-                    {new Date(e.createdAt).toLocaleString()}
-                  </Text>
-                </Group>
-              ))}
-            </Stack>
-          </Stack>
-        ) : null}
-      </Drawer>
+      <RaffleConfirmModal
+        action={confirmAction}
+        selected={selected}
+        loading={actionLoading}
+        onClose={() => setConfirmAction(null)}
+        onConfirm={runConfirmedAction}
+      />
     </>
   );
 }

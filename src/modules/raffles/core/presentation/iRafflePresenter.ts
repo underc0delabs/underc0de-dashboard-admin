@@ -7,7 +7,9 @@ export interface IRaffleViews {
   saveRaffleError: (error: Error) => void;
   actionSuccess: (item: IRaffle, message?: string) => void;
   actionError: (error: Error) => void;
+  removeRaffleSuccess: (id: string, message?: string) => void;
   detailSuccess: (
+    item: IRaffle,
     participants: IRaffleParticipant[],
     events: IRaffleEvent[],
   ) => void;
@@ -22,8 +24,11 @@ export interface IRafflePresenter {
     input: import("../entities/iRaffle").IRaffleFormInput,
   ) => void;
   publishRaffle: (id: string) => void;
+  closeRaffle: (id: string) => void;
   drawRaffle: (id: string) => void;
   redrawRaffle: (id: string) => void;
   claimRaffle: (id: string) => void;
+  duplicateRaffle: (id: string) => void;
+  deleteRaffle: (id: string) => void;
   loadDetail: (id: string) => void;
 }
