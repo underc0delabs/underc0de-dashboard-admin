@@ -61,6 +61,7 @@ const columns: Column<ICommerce>[] = [
     render: (commerce) => commerce.categoryName || "-",
   },
   { key: "detail", label: "Detalle", render: (commerce) => commerce.detail || "-" },
+  { key: "address", label: "Dirección", render: (commerce) => commerce.address || "-" },
   { key: "url", label: "URL", render: (commerce) => commerce.url || "-" },
   {
     key: "usersProDisccount",

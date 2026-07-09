@@ -7,6 +7,7 @@ export const HttpGetCommerceGateway = (
   httpClient: IHttpClient
 ): IGetCommerceGateway => {
   const toCommerces = (response: any): ICommerce[] => {
+    console.log("response", response);
     return response.map((commerce: any) => ({
       id: commerce.id,
       name: commerce.name,
@@ -29,6 +30,7 @@ export const HttpGetCommerceGateway = (
     getCommerces: async () => {
       try {
         const response = await httpClient.get("/commerces");
+        console.log("response", response);
         if (!response.status) {
           return Promise.reject(new Error(response.error.message));
         }
