@@ -2,35 +2,36 @@ import { IHttpClient } from "@/modules/httpClient/interfaces";
 import { IGetCommerceGateway } from "../../core/gateways/iGetCommerceGateway";
 import { ICommerce } from "../../core/entities/iCommerce";
 import { format } from "date-fns";
+import { mapCommerceLogo } from "./commerceGatewayUtils";
 
 export const HttpGetCommerceGateway = (
   httpClient: IHttpClient
 ): IGetCommerceGateway => {
   const toCommerces = (response: any): ICommerce[] => {
-    console.log("response", response);
-    return response.map((commerce: any) => ({
-      id: commerce.id,
-      name: commerce.name,
-      category: commerce.category,
-      categoryName: commerce.categoryName ?? null,
-      address: commerce.address,
-      phone: commerce.phone,
-      email: commerce.email,
-      status: commerce.status,
-      logo: commerce.logo,
-      usersProDisccount: commerce.usersProDisccount ?? null,
-      usersDisccount: commerce.usersDisccount ?? null,
-      url: commerce.url,
-      detail: commerce.detail,
-      createdAt: format(commerce.createdAt, "dd/MM/yyyy HH:mm"),
-      updatedAt: format(commerce.updatedAt, "dd/MM/yyyy HH:mm"),
-    }));
+    return response.map((commerce: any) =>
+      mapCommerceLogo({
+        id: commerce.id,
+        name: commerce.name,
+        category: commerce.category,
+        categoryName: commerce.categoryName ?? null,
+        address: commerce.address,
+        phone: commerce.phone,
+        email: commerce.email,
+        status: commerce.status,
+        logo: commerce.logo,
+        usersProDisccount: commerce.usersProDisccount ?? null,
+        usersDisccount: commerce.usersDisccount ?? null,
+        url: commerce.url,
+        detail: commerce.detail,
+        createdAt: format(commerce.createdAt, "dd/MM/yyyy HH:mm"),
+        updatedAt: format(commerce.updatedAt, "dd/MM/yyyy HH:mm"),
+      }),
+    );
   };
   return {
     getCommerces: async () => {
       try {
         const response = await httpClient.get("/commerces");
-        console.log("response", response);
         if (!response.status) {
           return Promise.reject(new Error(response.error.message));
         }

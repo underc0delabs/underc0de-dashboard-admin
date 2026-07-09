@@ -22,6 +22,7 @@ import { DataTable, Column, StatusBadge } from "@/components/common/DataTable";
 import { FilterBar, FilterOption } from "@/components/common/FilterBar";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { commercePresenterProvider } from "../infrastructure/presentation/presenterProvider";
+import { resolveFileUrl } from "@/utils/resolveFileUrl";
 import { ICommercePresenter } from "../core/presentation/iCommercePresenter";
 import { ICommerceViews } from "../core/views/iCommerceViews";
 import { ICommerce } from "../core/entities/iCommerce";
@@ -283,7 +284,7 @@ export default function Commerces() {
 
   const handleEdit = (commerce: ICommerce) => {
     setSelectedCommerce(commerce);
-    setPhotoPreview(commerce.logo || null);
+    setPhotoPreview(resolveFileUrl(commerce.logo));
     setLogoRemoved(false);
     form.setValues({
       name: commerce.name,
@@ -336,7 +337,11 @@ export default function Commerces() {
     };
 
     if (selectedCommerce !== null && selectedCommerce.id !== undefined) {
-      presenter.updateCommerce(selectedCommerce.id!, normalizedValues);
+      presenter.updateCommerce(selectedCommerce.id!, {
+        ...normalizedValues,
+        logo: values.logo ?? null,
+        removeLogo: logoRemoved,
+      });
     } else {
       const newCommerce: ICommerce = {
         name: normalizedValues.name!,
