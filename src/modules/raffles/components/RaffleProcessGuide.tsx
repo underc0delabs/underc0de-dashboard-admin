@@ -24,13 +24,13 @@ const steps = [
     icon: IconUsers,
     title: "Cerrá la participación",
     detail:
-      "Cuando termine el plazo — o antes si querés — cerrá la inscripción. Sin este paso no podés sortear.",
+      "Cuando termine el plazo — o antes si querés — cerrá la inscripción. Si hay participantes, el ganador se sortea al instante.",
   },
   {
     icon: IconCheck,
-    title: "Sorteá y entregá",
+    title: "Entregá el premio",
     detail:
-      "Sorteá un ganador al azar. Si reclama el premio, marcá la entrega. Si no reclama a tiempo, podés re-sortear.",
+      "Si el ganador reclama el premio, marcá la entrega. Si no reclama a tiempo, podés re-sortear.",
   },
 ];
 

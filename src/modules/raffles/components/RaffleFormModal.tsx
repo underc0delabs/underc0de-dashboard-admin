@@ -80,7 +80,7 @@ export function RaffleFormModal({
         ) : null}
         <FileInput
           label="Imagen del premio"
-          description="Opcional. Se muestra en la app."
+          description="Opcional. Máximo 900 KB (JPG, PNG, GIF o WebP). Se muestra en la app."
           accept="image/*"
           value={form.values.image}
           onChange={onImageChange}

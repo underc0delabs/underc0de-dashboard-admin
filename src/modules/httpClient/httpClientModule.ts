@@ -163,8 +163,30 @@ const toHttpResponse = (response: AxiosResponse): HttpResponse => {
 /**
  * @description creates general error response
  **/
-const toGeneralErrorResponse = (error: AxiosResponse): HttpResponse =>
-  createHttpResponse(error.status, error.data, error.statusText, false);
+const toGeneralErrorResponse = (error: AxiosResponse): HttpResponse => {
+  let message = error.statusText;
+  const data = error.data;
+
+  if (error.status === HttpStatusCode.PAYLOAD_TOO_LARGE) {
+    message =
+      "La imagen o el archivo es demasiado grande. Usá una imagen de menos de 1 MB.";
+  } else if (typeof data === "object" && data !== null) {
+    const apiMsg = (data as { msg?: string }).msg;
+    if (typeof apiMsg === "string" && apiMsg.trim()) {
+      message = apiMsg;
+    }
+  } else if (typeof data === "string") {
+    if (
+      data.includes("413") ||
+      data.toLowerCase().includes("request entity too large")
+    ) {
+      message =
+        "La imagen o el archivo es demasiado grande. Usá una imagen de menos de 1 MB.";
+    }
+  }
+
+  return createHttpResponse(error.status, error.data, message, false);
+};
 
 /**
  * @description check if response is server error

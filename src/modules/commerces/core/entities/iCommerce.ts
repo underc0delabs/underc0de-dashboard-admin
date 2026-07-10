@@ -3,7 +3,7 @@ export interface ICommerce {
   name: string;
   category?: string | null;
   categoryName?: string;
-  address: string;
+  address?: string;
   phone?: string;
   email?: string;
   status: boolean;

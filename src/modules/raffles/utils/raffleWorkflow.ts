@@ -111,7 +111,9 @@ export const getNextActionSummary = (item: IRaffle): string => {
         ? "Cerrar participación"
         : "Esperando participantes";
     case "closed":
-      return "Sortear ganador";
+      return (item.participantCount ?? 0) > 0
+        ? "Sorteo automático pendiente"
+        : "Sin participantes";
     case "drawn":
       return "Confirmar entrega o re-sortear";
     case "expired":
@@ -198,7 +200,7 @@ export const getWorkflowSteps = (item: IRaffle): WorkflowStep[] => {
       {
         key: "closed",
         label: "Participación cerrada",
-        description: "Listo para sortear",
+        description: "El ganador se elige al cerrar (automático)",
         state: "done",
       },
       {
@@ -253,14 +255,14 @@ export const getWorkflowSteps = (item: IRaffle): WorkflowStep[] => {
       key: "published",
       label: "2. Publicado",
       description: publishedWarning
-        ? "Plazo de participación vencido — cerrá para continuar"
+        ? "Plazo vencido — cerrá para sortear automáticamente"
         : "Los usuarios participan desde la app",
       state: stepState(1, currentIndex, publishedWarning),
     },
     {
       key: "closed",
       label: "3. Participación cerrada",
-      description: "Nadie más puede unirse",
+      description: "El ganador se elige al cerrar (automático)",
       state: stepState(2, currentIndex),
     },
     {
@@ -311,15 +313,18 @@ export const getPrimaryAction = (
         color: "yellow",
         action: "close",
         hint: deadlinePassed
-          ? "El plazo ya venció. Cerrá para habilitar el sorteo."
-          : "Podés cerrar antes del plazo si ya no querés más inscriptos.",
+          ? "El plazo ya venció. Al cerrar se elige un ganador al azar automáticamente."
+          : "Al cerrar se sortea automáticamente entre los inscriptos.",
       };
     case "closed":
+      if ((item.participantCount ?? 0) === 0) {
+        return null;
+      }
       return {
-        label: "Sortear ganador",
+        label: "Sortear ganador manualmente",
         color: "violet",
         action: "draw",
-        hint: `Se sorteará entre ${item.participantCount ?? 0} participante(s).`,
+        hint: "El sorteo automático no se ejecutó. Podés forzar el sorteo entre los participantes.",
       };
     case "drawn":
       return {
@@ -354,14 +359,14 @@ export const confirmLabels: Record<
   close: {
     title: "Cerrar participación",
     message:
-      "Nadie podrá sumarse más. Este paso es necesario antes de sortear.",
+      "Nadie podrá sumarse más. Si hay participantes, se elegirá un ganador al azar de inmediato.",
     confirm: "Cerrar participación",
     color: "yellow",
   },
   draw: {
     title: "Sortear ganador",
     message:
-      "Se elegirá un ganador al azar entre los participantes inscriptos. Esta acción no se puede deshacer, pero podrás re-sortear si el premio no se reclama.",
+      "Se elegirá un ganador al azar entre los participantes inscriptos. Normalmente esto ocurre solo al cerrar la participación.",
     confirm: "Sortear ahora",
     color: "violet",
   },

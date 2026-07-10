@@ -24,6 +24,8 @@ import type {
 } from "../core/entities/iRaffle";
 import { useAuth } from "@/context/AuthContext";
 import { isoToArgentinaDatetimeLocal } from "../utils/raffleDateTime";
+
+const MAX_RAFFLE_IMAGE_SIZE_BYTES = 900 * 1024;
 import {
   ConfirmAction,
   canDeleteRaffle,
@@ -63,7 +65,8 @@ function RaffleStatusBadge({ item }: { item: IRaffle }) {
 
 export default function Raffles() {
   const { hasPermission } = useAuth();
-  const isAdmin = hasPermission("admin");
+  const canManageRaffleWorkflow =
+    hasPermission("admin") || hasPermission("editor");
   const [raffles, setRaffles] = useState<IRaffle[]>([]);
   const [selected, setSelected] = useState<IRaffle | null>(null);
   const [participants, setParticipants] = useState<IRaffleParticipant[]>([]);
@@ -320,6 +323,18 @@ export default function Raffles() {
   };
 
   const handleImageChange = (file: File | null) => {
+    if (file && file.size > MAX_RAFFLE_IMAGE_SIZE_BYTES) {
+      notifications.show({
+        title: "Imagen muy pesada",
+        message:
+          "La imagen no puede superar 900 KB. Comprimila o elegí otra más liviana.",
+        color: "red",
+      });
+      form.setFieldValue("image", null);
+      setImagePreview(selected ? resolveFileUrl(selected.imageUrl) : null);
+      return;
+    }
+
     form.setFieldValue("image", file);
     if (file) {
       const reader = new FileReader();
@@ -411,7 +426,7 @@ export default function Raffles() {
     <>
       <PageHeader
         title="Sorteos"
-        description="Creá sorteos, publicalos en la app, cerrá la participación, sorteá y registrá la entrega del premio."
+        description="Creá sorteos, publicalos en la app y registrá la entrega del premio. Al cerrar la participación, el ganador se sortea automáticamente."
         action={{ label: "Nuevo sorteo", onClick: openCreate }}
       />
 
@@ -487,7 +502,7 @@ export default function Raffles() {
         participants={participants}
         events={events}
         detailLoading={detailLoading}
-        isAdmin={isAdmin}
+        isAdmin={canManageRaffleWorkflow}
         actionLoading={actionLoading}
         onEdit={openEdit}
         onConfirmAction={setConfirmAction}

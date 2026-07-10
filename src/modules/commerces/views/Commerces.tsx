@@ -229,7 +229,6 @@ export default function Commerces() {
     },
     validate: {
       name: (value) => (!value ? "El nombre es requerido" : null),
-      address: (value) => (!value ? "La dirección es requerida" : null),
       email: (value) => {
         if (value && !/^\S+@\S+$/.test(value)) return "Email inválido";
         return null;
@@ -346,7 +345,7 @@ export default function Commerces() {
       const newCommerce: ICommerce = {
         name: normalizedValues.name!,
         category: normalizedValues.category ?? undefined,
-        address: values.address!,
+        address: values.address ?? "",
         phone: values.phone,
         email: values.email,
         status: values.status,
