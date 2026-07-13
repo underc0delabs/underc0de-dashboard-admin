@@ -125,7 +125,6 @@ export default function Raffles() {
         });
         setSelected(prev => {
           if (prev?.id === item.id) {
-            presenterRef.current?.loadDetail(item.id);
             return item;
           }
           return prev;

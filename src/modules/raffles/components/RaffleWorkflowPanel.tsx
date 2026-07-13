@@ -16,6 +16,8 @@ import {
   IconCircleCheck,
   IconCircleDotted,
   IconCopy,
+  IconEye,
+  IconEyeOff,
   IconPencil,
   IconTrash,
 } from "@tabler/icons-react";
@@ -87,23 +89,63 @@ export function RaffleWorkflowPanel({
 
   return (
     <Stack gap="md">
-      <Paper withBorder p="md" radius="md">
-        <Text size="sm" fw={600} mb="xs">
-          Visibilidad en la app
+      <Paper
+        withBorder
+        p="md"
+        radius="md"
+        bg={isVisibleInApp ? "teal.9" : "dark.6"}
+        style={{
+          borderColor: isVisibleInApp
+            ? "var(--mantine-color-teal-6)"
+            : "var(--mantine-color-gray-6)",
+        }}>
+        <Group justify="space-between" align="flex-start" wrap="nowrap" mb="sm">
+          <Group gap="sm" wrap="nowrap">
+            <ThemeIcon
+              size={36}
+              radius="md"
+              variant="light"
+              color={isVisibleInApp ? "teal" : "gray"}>
+              {isVisibleInApp ? (
+                <IconEye size={20} />
+              ) : (
+                <IconEyeOff size={20} />
+              )}
+            </ThemeIcon>
+            <Stack gap={2}>
+              <Text size="sm" fw={600}>
+                Visibilidad en la app móvil
+              </Text>
+              <Badge
+                size="md"
+                variant="filled"
+                color={isVisibleInApp ? "teal" : "gray"}>
+                {isVisibleInApp ? "VISIBLE para usuarios" : "OCULTO en la app"}
+              </Badge>
+            </Stack>
+          </Group>
+          <Switch
+            size="lg"
+            color="teal"
+            onLabel="ON"
+            offLabel="OFF"
+            checked={isVisibleInApp}
+            disabled={actionLoading}
+            aria-label={
+              isVisibleInApp
+                ? "Ocultar sorteo en la app"
+                : "Mostrar sorteo en la app"
+            }
+            onChange={event =>
+              onToggleVisibleInApp(item, event.currentTarget.checked)
+            }
+          />
+        </Group>
+        <Text size="xs" c="dimmed">
+          {isVisibleInApp
+            ? "Los usuarios lo ven en la app y pueden participar."
+            : "No aparece en la app. Seguís viéndolo acá en el panel admin."}
         </Text>
-        <Switch
-          label={isVisibleInApp ? "Visible en la app móvil" : "Oculto en la app móvil"}
-          description={
-            isVisibleInApp
-              ? "Los usuarios pueden ver y participar en este sorteo."
-              : "No aparece en la app. Útil para sorteos de prueba o archivados."
-          }
-          checked={isVisibleInApp}
-          disabled={actionLoading}
-          onChange={event =>
-            onToggleVisibleInApp(item, event.currentTarget.checked)
-          }
-        />
       </Paper>
 
       <Paper withBorder p="md" radius="md">
