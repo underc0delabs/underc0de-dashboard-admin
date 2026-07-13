@@ -46,8 +46,12 @@ const Login: React.FC = () => {
         setError('Error: respuesta de login inválida');
       }
     },
-    onLoginError: (response) => {
-      setError(`Credenciales inválidas: ${response?.error?.message}`);
+    onLoginError: (error: unknown) => {
+      const message =
+        error instanceof Error
+          ? error.message
+          : (error as { error?: { message?: string } })?.error?.message;
+      setError(message?.trim() ? message : "Credenciales inválidas");
     },
   };
 

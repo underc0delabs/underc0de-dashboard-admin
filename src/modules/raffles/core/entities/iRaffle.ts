@@ -18,6 +18,7 @@ export interface IRaffle {
   participationOpen?: boolean;
   participantCount: number;
   winnerDisplayName: string | null;
+  visibleInApp?: boolean;
 }
 
 export interface IRaffleParticipant {

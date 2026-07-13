@@ -42,6 +42,7 @@ type RaffleDetailDrawerProps = {
   actionLoading: boolean;
   onEdit: (item: IRaffle) => void;
   onConfirmAction: (action: ConfirmAction) => void;
+  onToggleVisibleInApp: (item: IRaffle, visibleInApp: boolean) => void;
 };
 
 function RaffleStatusBadge({ item }: { item: IRaffle }) {
@@ -63,6 +64,7 @@ export function RaffleDetailDrawer({
   actionLoading,
   onEdit,
   onConfirmAction,
+  onToggleVisibleInApp,
 }: RaffleDetailDrawerProps) {
   if (!selected) {
     return null;
@@ -98,6 +100,11 @@ export function RaffleDetailDrawer({
               color={participationOpen ? "green" : "yellow"}
               variant="light">
               {participationOpen ? "Participación abierta" : "Participación cerrada"}
+            </Badge>
+          ) : null}
+          {selected.visibleInApp === false ? (
+            <Badge color="gray" variant="filled">
+              Oculto en app
             </Badge>
           ) : null}
         </Group>
@@ -204,6 +211,7 @@ export function RaffleDetailDrawer({
               onEdit={onEdit}
               actionLoading={actionLoading}
               onConfirmAction={onConfirmAction}
+              onToggleVisibleInApp={onToggleVisibleInApp}
             />
           </Tabs.Panel>
 

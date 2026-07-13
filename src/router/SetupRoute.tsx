@@ -22,6 +22,10 @@ export function SetupRoute({ children }: SetupRouteProps) {
     return <Navigate to="/login" replace />;
   }
 
+  if (!user?.role) {
+    return <Navigate to="/login" replace />;
+  }
+
   const userRole = user.role.toLowerCase();
   const isAdmin = userRole === RolesEnum.ADMIN_ROLE.toLowerCase();
   const isEditor = userRole === RolesEnum.USER_EDITOR.toLowerCase();

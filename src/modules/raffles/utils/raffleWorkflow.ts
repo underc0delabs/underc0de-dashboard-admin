@@ -30,6 +30,7 @@ export const eventTypeLabel: Record<string, string> = {
   claim_expired: "Plazo de reclamo vencido",
   deleted: "Sorteo eliminado",
   duplicated: "Sorteo duplicado",
+  visibility_changed: "Visibilidad en app actualizada",
 };
 
 export type ConfirmAction =

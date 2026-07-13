@@ -106,6 +106,11 @@ export const HttpRaffleGateway = (httpClient: IHttpClient) => ({
       mapRaffle,
     ),
 
+  setVisibility: (id: string, visibleInApp: boolean): Promise<IRaffle> =>
+    request(() =>
+      httpClient.patch(`/admin/raffles/${id}/visibility`, { visibleInApp }),
+    ).then(mapRaffle),
+
   delete: (id: string): Promise<{ id: string }> =>
     request(() => httpClient.delete(`/admin/raffles/${id}`)),
 

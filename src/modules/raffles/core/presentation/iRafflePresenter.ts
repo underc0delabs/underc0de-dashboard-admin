@@ -29,6 +29,7 @@ export interface IRafflePresenter {
   redrawRaffle: (id: string) => void;
   claimRaffle: (id: string) => void;
   duplicateRaffle: (id: string) => void;
+  setRaffleVisibility: (id: string, visibleInApp: boolean) => void;
   deleteRaffle: (id: string) => void;
   loadDetail: (id: string) => void;
 }

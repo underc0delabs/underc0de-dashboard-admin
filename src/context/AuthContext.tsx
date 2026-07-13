@@ -87,10 +87,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback((token: string, userData: AdminUser) => {
+    const normalizedUser: AdminUser = {
+      ...userData,
+      role: (userData.role?.toLowerCase?.() ?? "editor") as AdminUser["role"],
+    };
     localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("user", JSON.stringify(normalizedUser));
     setIsAuthenticated(true);
-    setUser(userData);
+    setUser(normalizedUser);
     setToken(token);
   }, []);
 

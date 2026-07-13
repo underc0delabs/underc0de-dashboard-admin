@@ -13,6 +13,8 @@ export const RaffleActions = (gateway: IRaffleGateway) => ({
   redrawRaffle: (id: string) => gateway.redraw(id),
   claimRaffle: (id: string) => gateway.claim(id),
   duplicateRaffle: (id: string) => gateway.duplicate(id),
+  setRaffleVisibility: (id: string, visibleInApp: boolean) =>
+    gateway.setVisibility(id, visibleInApp),
   deleteRaffle: (id: string) => gateway.delete(id),
   listParticipants: (id: string) => gateway.listParticipants(id),
   listEvents: (id: string) => gateway.listEvents(id),

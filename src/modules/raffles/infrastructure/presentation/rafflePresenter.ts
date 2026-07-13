@@ -98,6 +98,22 @@ export const RafflePresenter = (
       );
   },
 
+  setRaffleVisibility(id: string, visibleInApp: boolean) {
+    actions
+      .setRaffleVisibility(id, visibleInApp)
+      .then(item =>
+        views.actionSuccess(
+          item,
+          visibleInApp
+            ? "Sorteo visible en la app móvil"
+            : "Sorteo oculto en la app móvil",
+        ),
+      )
+      .catch(err =>
+        views.actionError(err instanceof Error ? err : new Error(String(err))),
+      );
+  },
+
   deleteRaffle(id: string) {
     actions
       .deleteRaffle(id)

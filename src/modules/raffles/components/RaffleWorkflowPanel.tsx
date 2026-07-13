@@ -5,6 +5,7 @@ import {
   Group,
   Paper,
   Stack,
+  Switch,
   Text,
   ThemeIcon,
   Tooltip,
@@ -65,6 +66,7 @@ type RaffleWorkflowPanelProps = {
   onEdit: (item: IRaffle) => void;
   actionLoading: boolean;
   onConfirmAction: (action: ConfirmAction) => void;
+  onToggleVisibleInApp: (item: IRaffle, visibleInApp: boolean) => void;
 };
 
 export function RaffleWorkflowPanel({
@@ -73,6 +75,7 @@ export function RaffleWorkflowPanel({
   onEdit,
   actionLoading,
   onConfirmAction,
+  onToggleVisibleInApp,
 }: RaffleWorkflowPanelProps) {
   const steps = getWorkflowSteps(item);
   const primaryAction = getPrimaryAction(item, isAdmin);
@@ -80,9 +83,29 @@ export function RaffleWorkflowPanel({
   const canDuplicate = canDuplicateRaffle(item);
   const canDelete = canDeleteRaffle(item);
   const deleteBlockedReason = getDeleteBlockedReason(item);
+  const isVisibleInApp = item.visibleInApp !== false;
 
   return (
     <Stack gap="md">
+      <Paper withBorder p="md" radius="md">
+        <Text size="sm" fw={600} mb="xs">
+          Visibilidad en la app
+        </Text>
+        <Switch
+          label={isVisibleInApp ? "Visible en la app móvil" : "Oculto en la app móvil"}
+          description={
+            isVisibleInApp
+              ? "Los usuarios pueden ver y participar en este sorteo."
+              : "No aparece en la app. Útil para sorteos de prueba o archivados."
+          }
+          checked={isVisibleInApp}
+          disabled={actionLoading}
+          onChange={event =>
+            onToggleVisibleInApp(item, event.currentTarget.checked)
+          }
+        />
+      </Paper>
+
       <Paper withBorder p="md" radius="md">
         <Text size="sm" fw={600} mb="xs">
           Acciones del sorteo

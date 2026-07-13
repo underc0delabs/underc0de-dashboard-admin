@@ -271,6 +271,20 @@ export default function Raffles() {
         render: item => item.participantCount ?? 0,
       },
       {
+        key: "visibleInApp",
+        label: "App",
+        render: item =>
+          item.visibleInApp === false ? (
+            <Badge color="gray" variant="outline" size="sm">
+              Oculto
+            </Badge>
+          ) : (
+            <Badge color="teal" variant="light" size="sm">
+              Visible
+            </Badge>
+          ),
+      },
+      {
         key: "proOnly",
         label: "Alcance",
         render: item =>
@@ -364,6 +378,11 @@ export default function Raffles() {
   const requestDelete = (item: IRaffle) => {
     setSelected(item);
     setConfirmAction("delete");
+  };
+
+  const handleToggleVisibleInApp = (item: IRaffle, visibleInApp: boolean) => {
+    setActionLoading(true);
+    presenter.setRaffleVisibility(item.id, visibleInApp);
   };
 
   const runConfirmedAction = () => {
@@ -506,6 +525,7 @@ export default function Raffles() {
         actionLoading={actionLoading}
         onEdit={openEdit}
         onConfirmAction={setConfirmAction}
+        onToggleVisibleInApp={handleToggleVisibleInApp}
       />
 
       <RaffleConfirmModal
