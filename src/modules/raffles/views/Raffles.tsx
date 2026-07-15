@@ -226,6 +226,14 @@ export default function Raffles() {
     load();
   }, [load]);
 
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      presenterRef.current?.loadRaffles();
+    }, 60_000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
   const filteredRaffles = useMemo(() => {
     const search = filterValues.search?.trim().toLowerCase() ?? "";
     return raffles.filter(item => {
