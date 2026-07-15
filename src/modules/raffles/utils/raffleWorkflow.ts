@@ -84,15 +84,9 @@ export const canEditRaffle = (item: IRaffle): boolean =>
 
 export const canDuplicateRaffle = (_item: IRaffle): boolean => true;
 
-export const canDeleteRaffle = (item: IRaffle): boolean =>
-  item.status === "draft" || item.status === "completed";
+export const canDeleteRaffle = (_item: IRaffle): boolean => true;
 
-export const getDeleteBlockedReason = (item: IRaffle): string | null => {
-  if (canDeleteRaffle(item)) {
-    return null;
-  }
-  return "Solo podés eliminar sorteos en borrador o finalizados. Los activos deben completar el flujo antes.";
-};
+export const getDeleteBlockedReason = (_item: IRaffle): string | null => null;
 
 export const getRafflePhaseLabel = (item: IRaffle): string => {
   if (item.status === "published") {
