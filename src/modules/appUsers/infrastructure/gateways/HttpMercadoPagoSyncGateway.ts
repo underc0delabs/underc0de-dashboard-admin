@@ -31,6 +31,8 @@ export const HttpMercadoPagoSyncGateway = (
           subscriptionsCreated: result.subscriptionsCreated ?? 0,
           subscriptionsUpdated: result.subscriptionsUpdated ?? 0,
           paymentsSaved: result.paymentsSaved ?? 0,
+          usersRevoked: result.usersRevoked ?? 0,
+          stalePlansCancelled: result.stalePlansCancelled ?? 0,
           error: result.error,
         };
       }

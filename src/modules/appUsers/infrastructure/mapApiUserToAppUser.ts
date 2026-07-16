@@ -100,17 +100,65 @@ const parseLegacySubscriptionField = (
   return null;
 };
 
+const mapApiSubscriptionStatus = (
+  status: string | null | undefined
+): SubscriptionStatus | null => {
+  const normalized = String(status ?? "").toUpperCase();
+  if (normalized === "ACTIVE") return "active";
+  if (normalized === "CANCELLED") return "cancelled";
+  if (normalized === "EXPIRED") return "expired";
+  if (normalized === "PENDING") return "pending";
+  if (normalized === "PAYMENT_FAILED") return "payment_failed";
+  return null;
+};
+
 /** Mapea un usuario tal como lo devuelve GET /users o GET /users/:id hacia IAppUser. */
 export const mapApiUserToAppUser = (user: Record<string, unknown>): IAppUser => {
   const plans = user.subscriptionPlans as PlanRow[] | undefined;
+  const apiVip = user.vip === true;
+  const apiSubscription = user.subscription as
+    | { status?: string; nextPaymentDate?: string | Date | null }
+    | null
+    | undefined;
 
   let subscription: SubscriptionStatus;
   let subscriptionPlan: string | undefined;
   let subscriptionEndDate: string | undefined;
 
-  if (plans?.length) {
+  if (apiVip) {
+    subscription = "active";
+    const fromPlans = plans?.length ? deriveSubscriptionFromPlans(plans) : null;
+    subscriptionPlan =
+      fromPlans?.subscriptionPlan ||
+      (plans?.length
+        ? sortPlansLatestFirst(plans).find((p) => statusUpper(p.status) === "ACTIVE")
+            ?.mpPreapprovalId
+        : undefined);
+    const next =
+      apiSubscription?.nextPaymentDate ?? fromPlans?.subscriptionEndDate;
+    if (next) {
+      subscriptionEndDate = format(new Date(next as string | Date), "dd/MM/yyyy HH:mm");
+    } else if (fromPlans?.subscriptionEndDate) {
+      subscriptionEndDate = fromPlans.subscriptionEndDate;
+    }
+  } else if (apiSubscription?.status) {
+    subscription = mapApiSubscriptionStatus(apiSubscription.status) ?? "none";
+    const fromPlans = plans?.length ? deriveSubscriptionFromPlans(plans) : null;
+    subscriptionPlan = fromPlans?.subscriptionPlan;
+    if (apiSubscription.nextPaymentDate) {
+      subscriptionEndDate = format(
+        new Date(apiSubscription.nextPaymentDate as string | Date),
+        "dd/MM/yyyy HH:mm"
+      );
+    } else if (fromPlans?.subscriptionEndDate) {
+      subscriptionEndDate = fromPlans.subscriptionEndDate;
+    }
+  } else if (plans?.length) {
     const d = deriveSubscriptionFromPlans(plans);
-    subscription = d.subscription;
+    subscription =
+      d.subscription === "active" && user.vip === false
+        ? "cancelled"
+        : d.subscription;
     subscriptionPlan = d.subscriptionPlan;
     subscriptionEndDate = d.subscriptionEndDate;
   } else {

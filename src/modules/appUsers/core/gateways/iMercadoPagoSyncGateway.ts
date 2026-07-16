@@ -5,6 +5,8 @@ export interface MercadoPagoSyncStatus {
   subscriptionsCreated?: number;
   subscriptionsUpdated?: number;
   paymentsSaved?: number;
+  usersRevoked?: number;
+  stalePlansCancelled?: number;
   error?: string;
 }
 

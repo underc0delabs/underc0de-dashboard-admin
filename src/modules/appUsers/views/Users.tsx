@@ -255,8 +255,13 @@ export default function Users() {
           if (!status) return;
 
           if (status.status === "completed") {
-            const { subscriptionsCreated, subscriptionsUpdated, paymentsSaved } =
-              status;
+            const {
+              subscriptionsCreated,
+              subscriptionsUpdated,
+              paymentsSaved,
+              usersRevoked,
+              stalePlansCancelled,
+            } = status;
             const parts: string[] = [];
             if ((subscriptionsCreated ?? 0) > 0)
               parts.push(`${subscriptionsCreated} creadas`);
@@ -264,6 +269,10 @@ export default function Users() {
               parts.push(`${subscriptionsUpdated} actualizadas`);
             if ((paymentsSaved ?? 0) > 0)
               parts.push(`${paymentsSaved} pagos guardados`);
+            if ((usersRevoked ?? 0) > 0)
+              parts.push(`${usersRevoked} PRO revocados`);
+            if ((stalePlansCancelled ?? 0) > 0)
+              parts.push(`${stalePlansCancelled} planes obsoletos cancelados`);
             const summary =
               parts.length > 0 ? parts.join(", ") : "Sin cambios";
 
