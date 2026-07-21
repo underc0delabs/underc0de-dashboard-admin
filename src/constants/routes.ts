@@ -6,6 +6,7 @@ export const routes = {
   commerces: "commerces",
   categories: "categories",
   raffles: "raffles",
+  bingo: "bingo",
   adminUsers: "admin-users",
   notifications: "notifications",
   environments: "environments",
