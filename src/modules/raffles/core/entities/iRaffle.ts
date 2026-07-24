@@ -14,6 +14,8 @@ export interface IRaffle {
   participationDeadline: string;
   claimDeadline: string;
   proOnly: boolean;
+  allowedCountry?: string | null;
+  allowedProvince?: string | null;
   status: RaffleStatus;
   participationOpen?: boolean;
   participantCount: number;
@@ -44,6 +46,8 @@ export interface IRaffleFormInput {
   participationDeadline: string;
   claimDeadline: string;
   proOnly: boolean;
+  allowedCountry?: string;
+  allowedProvince?: string;
   image?: File | null;
   removeImage?: boolean;
 }

@@ -1,0 +1,74 @@
+.calendarPaper {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.weekdayRow {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.weekdayLabel {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mantine-color-dimmed);
+  text-transform: uppercase;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.dayCell {
+  min-height: 72px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+.dayCell:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dayCellMuted {
+  opacity: 0.35;
+}
+
+.dayCellSelected {
+  border-color: var(--mantine-color-pink-5);
+  background: rgba(244, 114, 182, 0.12);
+}
+
+.dayNumber {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--mantine-color-white);
+}
+
+.markerRow {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.markerDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--mantine-color-pink-5);
+}

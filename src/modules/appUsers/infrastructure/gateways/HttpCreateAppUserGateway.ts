@@ -13,6 +13,8 @@ export const HttpCreateAppUserGateway = (
         name: user.name,
         lastname: user.lastname ?? "",
         phone: user.phone ?? "",
+        country: user.country ?? "",
+        province: user.province ?? "",
         email: user.email,
         userType: 0,
         status: user.status ?? true,

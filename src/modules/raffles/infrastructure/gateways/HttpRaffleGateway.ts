@@ -47,6 +47,8 @@ const appendFormFields = (formData: FormData, input: IRaffleFormInput) => {
   formData.append("participationDeadline", input.participationDeadline);
   formData.append("claimDeadline", input.claimDeadline);
   formData.append("proOnly", String(input.proOnly));
+  formData.append("allowedCountry", input.allowedCountry?.trim() ?? "");
+  formData.append("allowedProvince", input.allowedProvince?.trim() ?? "");
   if (isUploadableFile(input.image)) {
     formData.append("image", input.image, input.image.name);
   }

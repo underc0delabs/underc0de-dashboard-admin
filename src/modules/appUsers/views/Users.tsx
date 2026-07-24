@@ -414,6 +414,8 @@ export default function Users() {
       name: "",
       email: "",
       phone: "",
+      country: "",
+      province: "",
       forumUserId: "",
       forumEmail: "",
       mercadopago_email: "",
@@ -605,6 +607,8 @@ export default function Users() {
       name: user.name,
       email: user.email,
       phone: user.phone ?? "",
+      country: user.country ?? "",
+      province: user.province ?? "",
       forumUserId: user.forumUserId ?? "",
       forumEmail: user.forumEmail ?? "",
       mercadopago_email: user.mercadopago_email ?? "",
@@ -839,6 +843,26 @@ export default function Users() {
               <TextInput
                 label="Apellido"
                 {...form.getInputProps("lastname")}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { color: "var(--mantine-color-dark-1)" },
+                }}
+              />
+            </Group>
+            <Group grow>
+              <TextInput
+                label="País"
+                placeholder="AR, UY..."
+                {...form.getInputProps("country")}
+                styles={{
+                  label: { color: "var(--mantine-color-dark-1)" },
+                  input: { color: "var(--mantine-color-dark-1)" },
+                }}
+              />
+              <TextInput
+                label="Provincia"
+                placeholder="Buenos Aires, CABA..."
+                {...form.getInputProps("province")}
                 styles={{
                   label: { color: "var(--mantine-color-dark-1)" },
                   input: { color: "var(--mantine-color-dark-1)" },

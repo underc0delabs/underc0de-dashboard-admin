@@ -12,6 +12,8 @@ const buildUserPatchPayload = (
     "username",
     "email",
     "phone",
+    "country",
+    "province",
     "status",
     "subscription",
     "subscriptionPlan",

@@ -16,6 +16,8 @@ import {
   IconCategory,
   IconTicket,
   IconGrid3x3,
+  IconCalendarEvent,
+  IconCalendar,
   IconUserShield,
   IconBell,
   IconLogout,
@@ -77,6 +79,18 @@ const underc0deNavItems: NavItem[] = [
     icon: IconTicket,
     label: "Sorteos",
     path: routes.raffles,
+    roles: ["admin", "editor"],
+  },
+  {
+    icon: IconCalendarEvent,
+    label: "Eventos",
+    path: routes.events,
+    roles: ["admin", "editor"],
+  },
+  {
+    icon: IconCalendar,
+    label: "Calendario",
+    path: routes.birthdayCalendar,
     roles: ["admin", "editor"],
   },
   {

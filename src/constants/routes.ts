@@ -7,6 +7,8 @@ export const routes = {
   categories: "categories",
   raffles: "raffles",
   bingo: "bingo",
+  events: "events",
+  birthdayCalendar: "birthday-calendar",
   adminUsers: "admin-users",
   notifications: "notifications",
   environments: "environments",
