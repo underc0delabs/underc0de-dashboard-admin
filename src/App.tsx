@@ -24,6 +24,9 @@ const App: React.FC = () => {
     app.merchantsModuleInitialize(dependencyManagerRef.current);
     app.categoriesModuleInitialize(dependencyManagerRef.current);
     app.rafflesModuleInitialize(dependencyManagerRef.current);
+    app.bingoModuleInitialize(dependencyManagerRef.current);
+    app.eventsModuleInitialize(dependencyManagerRef.current);
+    app.birthdayCalendarModuleInitialize(dependencyManagerRef.current);
     app.notificationsModuleInitialize(dependencyManagerRef.current);
     app.profileModuleInitialize(dependencyManagerRef.current);
     setIsLoaded(true);

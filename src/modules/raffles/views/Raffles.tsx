@@ -179,6 +179,8 @@ export default function Raffles() {
       participationDeadline: "",
       claimDeadline: "",
       proOnly: false,
+      allowedCountry: "",
+      allowedProvince: "",
       image: null,
       removeImage: false,
     },
@@ -336,6 +338,8 @@ export default function Raffles() {
       participationDeadline: isoToArgentinaDatetimeLocal(item.participationDeadline),
       claimDeadline: isoToArgentinaDatetimeLocal(item.claimDeadline),
       proOnly: item.proOnly,
+      allowedCountry: item.allowedCountry ?? "",
+      allowedProvince: item.allowedProvince ?? "",
       image: null,
       removeImage: false,
     });

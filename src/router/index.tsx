@@ -14,6 +14,9 @@ import AdminUsers from "@/modules/adminUsers/views/AdminUsers";
 import Notifications from "@/modules/notifications/views/Notifications";
 import Environments from "@/modules/environments/views/Environments";
 import Raffles from "@/modules/raffles/views/Raffles";
+import Bingo from "@/modules/bingo/views/Bingo";
+import Events from "@/modules/events/views/Events";
+import BirthdayCalendar from "@/modules/birthdayCalendar/views/BirthdayCalendar";
 import Profile from "@/modules/profile/views/Profile";
 import { routes } from "@/constants/routes";
 
@@ -85,6 +88,30 @@ const router = createBrowserRouter([
         element: (
           <RoleBasedRoute allowedRoles={[RolesEnum.ADMIN_ROLE, RolesEnum.USER_EDITOR]}>
             <Raffles />
+          </RoleBasedRoute>
+        ),
+      },
+      {
+        path: routes.bingo,
+        element: (
+          <RoleBasedRoute allowedRoles={[RolesEnum.ADMIN_ROLE, RolesEnum.USER_EDITOR]}>
+            <Bingo />
+          </RoleBasedRoute>
+        ),
+      },
+      {
+        path: routes.events,
+        element: (
+          <RoleBasedRoute allowedRoles={[RolesEnum.ADMIN_ROLE, RolesEnum.USER_EDITOR]}>
+            <Events />
+          </RoleBasedRoute>
+        ),
+      },
+      {
+        path: routes.birthdayCalendar,
+        element: (
+          <RoleBasedRoute allowedRoles={[RolesEnum.ADMIN_ROLE, RolesEnum.USER_EDITOR]}>
+            <BirthdayCalendar />
           </RoleBasedRoute>
         ),
       },

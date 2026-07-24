@@ -16,6 +16,8 @@ export interface IAppUser {
   lastname?: string;
   username?: string;
   phone?: string;
+  country?: string;
+  province?: string;
   /** ID del usuario en el foro (miembro interno). */
   forumUserId?: string;
   forumEmail?: string;

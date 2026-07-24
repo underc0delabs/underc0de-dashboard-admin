@@ -27,7 +27,9 @@ import {
   canDeleteRaffle,
   canDuplicateRaffle,
   canEditRaffle,
+  canForceCloseRaffle,
   getDeleteBlockedReason,
+  getForceCloseHint,
   getPrimaryAction,
   getWorkflowSteps,
   type WorkflowStepState,
@@ -84,6 +86,8 @@ export function RaffleWorkflowPanel({
   const canEdit = canEditRaffle(item);
   const canDuplicate = canDuplicateRaffle(item);
   const canDelete = canDeleteRaffle(item);
+  const canForceClose = canForceCloseRaffle(item);
+  const forceCloseHint = getForceCloseHint(item);
   const deleteBlockedReason = getDeleteBlockedReason(item);
   const isVisibleInApp = item.visibleInApp !== false;
 
@@ -279,6 +283,25 @@ export function RaffleWorkflowPanel({
         </Paper>
       ) : null}
 
+      {isAdmin && canForceClose && primaryAction?.action !== "close" ? (
+        <Paper withBorder p="md" radius="md">
+          <Text size="sm" fw={600} mb={4}>
+            Cierre manual
+          </Text>
+          <Text size="sm" c="dimmed" mb="md">
+            {forceCloseHint}
+          </Text>
+          <Button
+            size="sm"
+            color="yellow"
+            variant="outline"
+            loading={actionLoading}
+            onClick={() => onConfirmAction("close")}>
+            Cerrar participación
+          </Button>
+        </Paper>
+      ) : null}
+
       {isAdmin && item.status === "drawn" ? (
         <Alert color="orange" variant="light" title="¿El ganador no reclamó?">
           <Text size="sm" mb="sm">
@@ -293,6 +316,24 @@ export function RaffleWorkflowPanel({
             loading={actionLoading}
             onClick={() => onConfirmAction("redraw")}>
             Re-sortear ahora
+          </Button>
+        </Alert>
+      ) : null}
+
+      {isAdmin && item.status === "expired" ? (
+        <Alert color="orange" variant="light" title="Reclamo vencido">
+          <Text size="sm" mb="sm">
+            Si el ganador igual recibió el premio, usá &quot;Marcar premio
+            entregado&quot; para finalizar el sorteo. Si no, podés elegir un nuevo
+            ganador.
+          </Text>
+          <Button
+            size="xs"
+            color="orange"
+            variant="outline"
+            loading={actionLoading}
+            onClick={() => onConfirmAction("redraw")}>
+            Re-sortear ganador
           </Button>
         </Alert>
       ) : null}

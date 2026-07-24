@@ -86,6 +86,25 @@ export const canDuplicateRaffle = (_item: IRaffle): boolean => true;
 
 export const canDeleteRaffle = (_item: IRaffle): boolean => true;
 
+export const canForceCloseRaffle = (item: IRaffle): boolean =>
+  item.status !== "completed";
+
+export const getForceCloseHint = (item: IRaffle): string => {
+  switch (item.status) {
+    case "draft":
+      return "Cerrá la participación aunque el sorteo no esté publicado. Si hay inscriptos, se sortea automáticamente.";
+    case "published":
+      return "Nadie podrá sumarse más. Si hay participantes, se elige un ganador al azar de inmediato.";
+    case "closed":
+      return "La participación ya está cerrada. Si hay inscriptos y aún no hay ganador, se intentará sortear ahora.";
+    case "drawn":
+    case "expired":
+      return "La participación ya está cerrada. Usá esta acción solo si necesitás registrar un cierre forzado por una excepción.";
+    default:
+      return "Cierre manual de participación para casos excepcionales.";
+  }
+};
+
 export const getDeleteBlockedReason = (_item: IRaffle): string | null => null;
 
 export const getRafflePhaseLabel = (item: IRaffle): string => {
@@ -112,7 +131,7 @@ export const getNextActionSummary = (item: IRaffle): string => {
     case "drawn":
       return "Confirmar entrega o re-sortear";
     case "expired":
-      return "Re-sortear ganador";
+      return "Marcar premio entregado o re-sortear";
     case "completed":
       return "Finalizado";
     default:
@@ -330,10 +349,10 @@ export const getPrimaryAction = (
       };
     case "expired":
       return {
-        label: "Re-sortear ganador",
-        color: "orange",
-        action: "redraw",
-        hint: "Se excluirá al ganador anterior y se elegirá uno nuevo.",
+        label: "Marcar premio entregado",
+        color: "green",
+        action: "claim",
+        hint: "Finalizá el sorteo si el ganador recibió el premio, aunque haya vencido el plazo de reclamo.",
       };
     default:
       return null;
@@ -354,7 +373,7 @@ export const confirmLabels: Record<
   close: {
     title: "Cerrar participación",
     message:
-      "Nadie podrá sumarse más. Si hay participantes, se elegirá un ganador al azar de inmediato.",
+      "Nadie podrá sumarse más. Si hay participantes y aún no hay ganador, se elegirá uno al azar de inmediato.",
     confirm: "Cerrar participación",
     color: "yellow",
   },
@@ -374,7 +393,8 @@ export const confirmLabels: Record<
   },
   claim: {
     title: "Marcar premio entregado",
-    message: "El sorteo quedará marcado como finalizado.",
+    message:
+      "El sorteo quedará marcado como finalizado. Podés usarlo aunque el plazo de reclamo haya vencido si entregaste el premio por fuera del flujo automático.",
     confirm: "Confirmar entrega",
     color: "green",
   },

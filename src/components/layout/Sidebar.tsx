@@ -15,6 +15,9 @@ import {
   IconBuildingStore,
   IconCategory,
   IconTicket,
+  IconGrid3x3,
+  IconCalendarEvent,
+  IconCalendar,
   IconUserShield,
   IconBell,
   IconLogout,
@@ -34,7 +37,14 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-const navItems = [
+type NavItem = {
+  icon: typeof IconDashboard;
+  label: string;
+  path: string;
+  roles: string[];
+};
+
+const underc0deNavItems: NavItem[] = [
   {
     icon: IconDashboard,
     label: "Dashboard",
@@ -72,6 +82,18 @@ const navItems = [
     roles: ["admin", "editor"],
   },
   {
+    icon: IconCalendarEvent,
+    label: "Eventos",
+    path: routes.events,
+    roles: ["admin", "editor"],
+  },
+  {
+    icon: IconCalendar,
+    label: "Calendario",
+    path: routes.birthdayCalendar,
+    roles: ["admin", "editor"],
+  },
+  {
     icon: IconUserShield,
     label: "Usuarios Admin",
     path: routes.adminUsers,
@@ -89,13 +111,32 @@ const navItems = [
     path: routes.environments,
     roles: ["admin"],
   },
+];
+
+const bingoNavItems: NavItem[] = [
   {
-    icon: IconUserCircle,
-    label: "Mi perfil",
-    path: routes.profile,
+    icon: IconGrid3x3,
+    label: "Eventos de bingo",
+    path: routes.bingo,
     roles: ["admin", "editor"],
   },
 ];
+
+const profileNavItem: NavItem = {
+  icon: IconUserCircle,
+  label: "Mi perfil",
+  path: routes.profile,
+  roles: ["admin", "editor"],
+};
+
+const filterNavItems = (items: NavItem[]) =>
+  items.filter((item) =>
+    item.roles.some((role) =>
+      role.toLowerCase() === "admin"
+        ? RolesEnum.ADMIN_ROLE
+        : RolesEnum.USER_EDITOR
+    )
+  );
 
 export function Sidebar({ open = true, onClose }: SidebarProps) {
   const navigate = useNavigate();
@@ -108,20 +149,9 @@ export function Sidebar({ open = true, onClose }: SidebarProps) {
     onClose?.();
   };
 
-  const filteredNavItems = navItems.filter((item) =>
-    item.roles.some((role) =>
-      role.toLowerCase() === "admin"
-        ? RolesEnum.ADMIN_ROLE
-        : RolesEnum.USER_EDITOR
-    )
-  );
-
-  const mainNavItems = filteredNavItems.filter(
-    (item) => item.path !== routes.profile
-  );
-  const profileNavItem = filteredNavItems.find(
-    (item) => item.path === routes.profile
-  );
+  const underc0deItems = filterNavItems(underc0deNavItems);
+  const bingoItems = filterNavItems(bingoNavItems);
+  const showProfile = filterNavItems([profileNavItem]).length > 0;
 
   const getFullPath = (path: string) => {
     return path === "" ? "/" : `/${path}`;
@@ -136,6 +166,33 @@ export function Sidebar({ open = true, onClose }: SidebarProps) {
     const fullPath = getFullPath(path);
     navigate(fullPath);
     onClose?.();
+  };
+
+  const renderNavLink = (item: NavItem, extraClassName?: string) => {
+    const active = isActive(item.path);
+    return (
+      <NavLink
+        key={item.path}
+        label={item.label}
+        leftSection={<item.icon size={20} stroke={1.5} />}
+        rightSection={<IconChevronRight size={14} stroke={1.5} />}
+        active={active}
+        onClick={() => handleNavigate(item.path)}
+        className={`${classes.navLink} ${extraClassName ?? ""}`.trim()}
+        styles={{
+          root: {
+            borderRadius: "var(--mantine-radius-md)",
+            color: active ? "white" : "var(--mantine-color-dark-1)",
+            backgroundColor: active
+              ? "var(--mantine-color-dark-5)"
+              : "transparent",
+          },
+          label: {
+            fontWeight: active ? 600 : 400,
+          },
+        }}
+      />
+    );
   };
 
   return (
@@ -162,64 +219,31 @@ export function Sidebar({ open = true, onClose }: SidebarProps) {
 
       <Divider color="dark.5" />
 
-      <Stack gap={4} p="md" style={{ flex: 1, minHeight: 0 }}>
-        {mainNavItems.map((item) => {
-          const active = isActive(item.path);
-          return (
-            <NavLink
-              key={item.path}
-              label={item.label}
-              leftSection={<item.icon size={20} stroke={1.5} />}
-              rightSection={<IconChevronRight size={14} stroke={1.5} />}
-              active={active}
-              onClick={() => handleNavigate(item.path)}
-              className={classes.navLink}
-              styles={{
-                root: {
-                  borderRadius: "var(--mantine-radius-md)",
-                  color: active ? "white" : "var(--mantine-color-dark-1)",
-                  backgroundColor: active
-                    ? "var(--mantine-color-dark-5)"
-                    : "transparent",
-                },
-                label: {
-                  fontWeight: active ? 600 : 400,
-                },
-              }}
-            />
-          );
-        })}
+      <Stack gap={4} p="md" style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+        {underc0deItems.length > 0 ? (
+          <Box className={classes.navSection}>
+            <Text className={classes.navSectionLabel}>Underc0de</Text>
+            <Stack gap={4} mt="xs">
+              {underc0deItems.map((item) => renderNavLink(item))}
+            </Stack>
+          </Box>
+        ) : null}
+
+        {bingoItems.length > 0 ? (
+          <Box className={`${classes.navSection} ${classes.navSectionBingo}`}>
+            <Text className={classes.navSectionLabel}>Bingo</Text>
+            <Stack gap={4} mt="xs">
+              {bingoItems.map((item) => renderNavLink(item, classes.navLinkBingo))}
+            </Stack>
+          </Box>
+        ) : null}
 
         <Box style={{ flex: 1, minHeight: 0 }} />
 
-        {profileNavItem && (
+        {showProfile && (
           <>
             <Divider color="dark.5" my="xs" />
-            <NavLink
-              key={profileNavItem.path}
-              label={profileNavItem.label}
-              leftSection={
-                <profileNavItem.icon size={20} stroke={1.5} />
-              }
-              rightSection={<IconChevronRight size={14} stroke={1.5} />}
-              active={isActive(profileNavItem.path)}
-              onClick={() => handleNavigate(profileNavItem.path)}
-              className={`${classes.navLink} ${classes.navLinkProfile}`}
-              styles={{
-                root: {
-                  borderRadius: "var(--mantine-radius-md)",
-                  color: isActive(profileNavItem.path)
-                    ? "white"
-                    : "var(--mantine-color-dark-1)",
-                  backgroundColor: isActive(profileNavItem.path)
-                    ? "var(--mantine-color-dark-5)"
-                    : "transparent",
-                },
-                label: {
-                  fontWeight: isActive(profileNavItem.path) ? 600 : 400,
-                },
-              }}
-            />
+            {renderNavLink(profileNavItem, classes.navLinkProfile)}
           </>
         )}
       </Stack>

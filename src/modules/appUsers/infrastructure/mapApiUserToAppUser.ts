@@ -197,6 +197,8 @@ export const mapApiUserToAppUser = (user: Record<string, unknown>): IAppUser => 
     lastname,
     username: user.username != null ? String(user.username) : undefined,
     phone: user.phone != null ? String(user.phone) : undefined,
+    country: user.country != null ? String(user.country) : undefined,
+    province: user.province != null ? String(user.province) : undefined,
     forumUserId:
       user.forumUserId != null && String(user.forumUserId).length > 0
         ? String(user.forumUserId)

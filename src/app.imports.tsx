@@ -12,5 +12,8 @@ export {environmentsModuleInitialize} from './modules/environments/environmentsM
 export {merchantsModuleInitialize} from './modules/commerces/merchantsModuleInitialize';
 export {categoriesModuleInitialize} from './modules/categories/categoriesModuleInitialize';
 export {rafflesModuleInitialize} from './modules/raffles/rafflesModuleInitialize';
+export {bingoModuleInitialize} from './modules/bingo/bingoModuleInitialize';
+export {eventsModuleInitialize} from './modules/events/eventsModuleInitialize';
+export {birthdayCalendarModuleInitialize} from './modules/birthdayCalendar/birthdayCalendarModuleInitialize';
 export {notificationsModuleInitialize} from './modules/notifications/notificationsModuleInitialize';
 export {profileModuleInitialize} from './modules/profile/profileModuleInitialize';

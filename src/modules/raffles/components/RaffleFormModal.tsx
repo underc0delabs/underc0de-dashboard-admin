@@ -7,6 +7,7 @@ import {
   Group,
   Image,
   Modal,
+  Select,
   Stack,
   Switch,
   Text,
@@ -14,6 +15,10 @@ import {
   Textarea,
 } from "@mantine/core";
 import { UseFormReturnType } from "@mantine/form";
+import {
+  COUNTRY_OPTIONS,
+  getProvinceOptionsForCountry,
+} from "@/constants/locationOptions";
 import type { IRaffle, IRaffleFormInput } from "../core/entities/iRaffle";
 
 type RaffleFormModalProps = {
@@ -112,6 +117,49 @@ export function RaffleFormModal({
           description="Si está activo, solo usuarios PRO pueden participar"
           {...form.getInputProps("proOnly", { type: "checkbox" })}
         />
+        <Text size="xs" c="dimmed">
+          Opcional. Si definís país o provincia, solo usuarios de esa zona podrán
+          participar en la app.
+        </Text>
+        <Group grow align="flex-start">
+          <Select
+            label="País del sorteo"
+            placeholder="Todos los países"
+            clearable
+            searchable
+            data={COUNTRY_OPTIONS.map((option) => ({
+              value: option.value,
+              label: option.label,
+            }))}
+            value={form.values.allowedCountry || null}
+            onChange={(value) => {
+              form.setFieldValue("allowedCountry", value ?? "");
+              form.setFieldValue("allowedProvince", "");
+            }}
+          />
+          <Select
+            label="Provincia del sorteo"
+            placeholder={
+              form.values.allowedCountry
+                ? "Todas las provincias"
+                : "Elegí un país primero"
+            }
+            clearable
+            searchable
+            disabled={!form.values.allowedCountry}
+            data={getProvinceOptionsForCountry(form.values.allowedCountry).map(
+              (option) => ({
+                value: option.value,
+                label: option.label,
+              }),
+            )}
+            {...form.getInputProps("allowedProvince")}
+            value={form.values.allowedProvince || null}
+            onChange={(value) =>
+              form.setFieldValue("allowedProvince", value ?? "")
+            }
+          />
+        </Group>
 
         <Group justify="flex-end" mt="sm">
           <Button variant="default" onClick={onClose}>

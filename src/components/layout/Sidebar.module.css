@@ -72,6 +72,46 @@
   border: 1px solid var(--mantine-color-dark-6);
 }
 
+.navSection {
+  padding: var(--mantine-spacing-sm);
+  border-radius: var(--mantine-radius-md);
+  border: 1px solid var(--mantine-color-dark-6);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.navSection + .navSection {
+  margin-top: var(--mantine-spacing-md);
+}
+
+.navSectionLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mantine-color-gray-4);
+}
+
+.navSectionHint {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--mantine-color-dark-2);
+}
+
+.navSectionBingo {
+  border-color: rgba(255, 159, 67, 0.35);
+  background: rgba(255, 159, 67, 0.06);
+}
+
+.navSectionBingo .navSectionLabel {
+  color: var(--mantine-color-orange-3);
+}
+
+.navLinkBingo::before {
+  background: var(--mantine-color-orange-5);
+}
+
 .navLinkProfile:hover {
   border-color: var(--mantine-color-dark-5);
 }
