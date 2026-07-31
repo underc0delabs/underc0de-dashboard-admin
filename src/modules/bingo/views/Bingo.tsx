@@ -367,8 +367,11 @@ export default function Bingo() {
 
             <BingoStandsManager
               stands={selectedEvent.stands}
-              onAdd={(label, merchantId) =>
-                presenter.createStand(selectedEvent.id, { label, merchantId })
+              onAdd={(label, merchantId, logo) =>
+                presenter.createStand(selectedEvent.id, { label, merchantId, logo })
+              }
+              onUpdateLogo={(standId, logo) =>
+                presenter.updateStand(selectedEvent.id, standId, { logo })
               }
               onDelete={standId => presenter.deleteStand(selectedEvent.id, standId)}
             />
