@@ -59,6 +59,7 @@ export interface IBingoParticipantEntry {
   participantId: string;
   name: string | null;
   email: string | null;
+  phone: string | null;
   joinedAt: string;
   completedAt: string | null;
   checkedCount: number;

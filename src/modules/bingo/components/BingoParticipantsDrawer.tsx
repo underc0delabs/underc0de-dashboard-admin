@@ -27,6 +27,7 @@ export function BingoParticipantsDrawer({
               <Table.Tr>
                 <Table.Th>Nombre</Table.Th>
                 <Table.Th>Email</Table.Th>
+                <Table.Th>Teléfono</Table.Th>
                 <Table.Th>Progreso</Table.Th>
                 <Table.Th>Estado</Table.Th>
               </Table.Tr>
@@ -36,6 +37,7 @@ export function BingoParticipantsDrawer({
                 <Table.Tr key={p.boardEntryId}>
                   <Table.Td>{p.name ?? "-"}</Table.Td>
                   <Table.Td>{p.email ?? "-"}</Table.Td>
+                  <Table.Td>{p.phone ?? "-"}</Table.Td>
                   <Table.Td>
                     {p.checkedCount}/{standCount}
                   </Table.Td>
