@@ -52,6 +52,7 @@ export interface IBingoStand {
   merchantId: string | null;
   merchantName: string | null;
   merchantLogo: string | null;
+  logoUrl: string | null;
 }
 
 export interface IBingoParticipantEntry {
@@ -80,9 +81,11 @@ export interface IBingoEventFormInput {
 }
 
 export interface IBingoStandFormInput {
-  label: string;
+  label?: string;
   merchantId?: string | null;
   code?: string;
+  logo?: File | null;
+  removeLogo?: boolean;
 }
 
 export const emptyBingoEventMetrics = (standCount = 0): IBingoEventMetrics => ({
