@@ -64,6 +64,13 @@ export const AppUsersPresenter = (
           const parts: string[] = [];
           parts.push(`MP: ${result.mp_status}`);
           parts.push(`Local: ${result.local_subscription_status}`);
+          parts.push(`PRO: ${result.user_is_pro ? "sí" : "no"}`);
+          if (result.preapproval_id) {
+            parts.push(`ID: ${result.preapproval_id}`);
+          }
+          if (result.match_source) {
+            parts.push(`Fuente: ${result.match_source}`);
+          }
           if ((result.payments_saved ?? 0) > 0) {
             parts.push(`${result.payments_saved} pagos nuevos`);
           }

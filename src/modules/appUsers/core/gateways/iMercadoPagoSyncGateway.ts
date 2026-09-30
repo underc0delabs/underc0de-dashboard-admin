@@ -15,6 +15,8 @@ export interface MercadoPagoReconcileUserResult {
   local_subscription_status: string;
   user_is_pro: boolean;
   payments_saved: number;
+  preapproval_id?: string;
+  match_source?: string;
 }
 
 export interface IMercadoPagoSyncGateway {
